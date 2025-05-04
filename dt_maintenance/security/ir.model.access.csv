@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dt_maintenance_equipment_state,dt_maintenance.maintenance_equipment_state,model_maintenance_equipment_state,base.group_user,1,1,1,1

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit Form View to Modify it -->
+        <record id="inherited_maintenance_equipment" model="ir.ui.view">
+            <field name="name">inherited.maintenance.equipment</field>
+            <field name="model">maintenance.equipment</field>
+            <field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//page[@name='product_information']//group[1]//group[1]" position="inside">
+                    <field name="product_id"/>
+                    <field name="product_tmpl_id"/>
+                </xpath>
+                <xpath expr="//sheet" position="before">
+                    <header>
+                        <field name="equipment_state_id" widget="statusbar"/>
+                    </header>
+                </xpath>
+                <xpath expr="//field[@name='location']" position="after">
+                    <field name="location_id"/>
+                </xpath>
+                <xpath expr="//field[@name='owner_user_id']" position="after">
+                    <field name="partner_id"/>
+                </xpath>
+
+                <xpath expr="//field[@name='location']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='owner_user_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record id="inherit_maintenance_equipment_kanban" model="ir.ui.view">
+            <field name="name">maintenance.equipment.kanban</field>
+            <field name="model">maintenance.equipment</field>
+            <field name="inherit_id" ref="maintenance.hr_equipment_view_kanban"/>
+            <field name="arch" type="xml">
+                <xpath expr="//kanban" position="attributes">
+                    <attribute name="default_group_by">equipment_state_id</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+
+    </data>
+</odoo>
