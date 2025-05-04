@@ -32,6 +32,8 @@ class LocationStockQuantity(models.TransientModel):
                      )
                 )
             rec.line_ids = datas
+    def btn_set_done(self):
+        self.btn_assigned(no_popup=True)
 
 
 class LocationStockQuantityLine(models.TransientModel):

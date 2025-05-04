@@ -1,9 +1,9 @@
-from odoo import fields, models, api
+from odoo import fields, models, api,_
 from odoo.exceptions import ValidationError
 
 
 class LocationUserConfiguration(models.Model):
-    _name = 'Location.user.configuration'
+    _name = 'location.user.configuration'
     _inherit = ['mail.thread','mail.activity.mixin']
     _description = 'Location User Configuration'
 
@@ -21,8 +21,42 @@ class LocationUserConfiguration(models.Model):
 
 
 
-    def btn_assigned(self):
-        pass
+
+
+    def btn_assigned(self,no_popup = False):
+        self.ensure_one()
+        if not no_popup and not self.assign_location.is_empty:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Products'),
+                'res_model': 'location.stock.quantity',
+                'target': 'new',
+                'context': {
+                'default_config_id': self.id,
+                'default_location_id': self.assign_location.id,
+                'default_message': """<p class="text-danger">Your Assign Location is not empty !! Are you sure to assign this location.. </p>"""
+            },
+            }
+        self.assign_location.set_owner_id(self.assign_location)
+        self.state = 'assigned'
+
+    def btn_remove(self):
+        self.ensure_one()
+        if  not self.assign_location.is_empty:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Products'),
+                'res_model': 'location.stock.quantity',
+                'target': 'new',
+                'context': {
+                    'default_config_id': self.id,
+                    'default_location_id': self.assign_location.id,
+                    'default_message': """<p class="text-danger">Your Remove  Location is not empty !! Are you sure to Remove user from this location.. </p>"""
+                },
+            }
+        self.assign_location.remove_owner_id()
+        self.state = 'removed'
+
 
 
 

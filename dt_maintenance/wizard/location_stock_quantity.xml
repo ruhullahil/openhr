@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="location_stock_quantity_view_form" model="ir.ui.view">
+        <field name="name">location_stock_quantity_view_form</field>
+        <field name="model">location.stock.quantity</field>
+        <field name="arch" type="xml">
+            <form string="location_stock_quantity_form">
+                <group>
+                    <field name="config_id" invisible="1"/>
+                    <field name="location_id" invisible="1"/>
+                    <field name="message" readonly="1"/>
+                </group>
+                <notebook>
+                    <page name="products" string="Products">
+                        <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="location_id"/>
+                                    <field name="quantity"/>
+                                </list>
+                            </field>
+
+                    </page>
+                </notebook>
+                <footer>
+                    <button name="btn_set_done" string="Done with Qty" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

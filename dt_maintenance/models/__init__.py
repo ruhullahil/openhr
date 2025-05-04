@@ -4,3 +4,4 @@ from . import models
 from . import inherited_product_template
 from . import inherited_maintenance_equipment
 from . import maintenanace_equipment_status
+from . import location_user_configuration

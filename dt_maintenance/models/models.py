@@ -14,6 +14,14 @@ class InheritStockLocation(models.Model):
             if location.usage == 'equipment' and location.location_id and location.location_id.usage != 'equipment':
                 raise ValidationError('Equipment location parent need to be equipment location as well !!')
 
+    def set_owner_id(self,owner):
+        self.ensure_one()
+        self.owner_id = owner.id
+
+    def remove_owner_id(self):
+        self.ensure_one()
+        self.owner_id = None
+
 
 
 class InheritResPartner(models.Model):
