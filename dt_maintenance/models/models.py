@@ -7,6 +7,7 @@ class InheritStockLocation(models.Model):
 
     usage = fields.Selection(selection_add=[('equipment', 'Equipment')],ondelete={'equipment': 'cascade'})
     owner_id = fields.Many2one('res.users',tracking=True)
+    location_assign_ids = fields.One2many('location.user.configuration','assign_location')
 
     @api.constrains('usage')
     def _equipment_location_constrain_check(self):
@@ -16,10 +17,16 @@ class InheritStockLocation(models.Model):
 
     def set_owner_id(self,owner):
         self.ensure_one()
+        have_assign_location = self.location_assign_ids.filtered(lambda l:l.state in ('assigned'))
+        if have_assign_location or self.owner_id:
+            raise ValidationError('You are not allow to do this operation !! Because of one of other user already assign this operation')
+
         self.owner_id = owner.id
 
     def remove_owner_id(self):
         self.ensure_one()
+        if not self.owner_id:
+            raise ValidationError('Some thing went wrong !!')
         self.owner_id = None
 
 

@@ -7,27 +7,27 @@
             <field name="sequence">5</field>
         </record>
 
-        <record id="group_field_officials" model="res.groups">
+        <record id="group_dt_field_officials" model="res.groups">
             <field name="name">Distributors/Field Officials</field>
             <field name="category_id" ref="dt_maintenance_category"/>
         </record>
 
-        <record id="group_technicians" model="res.groups">
+        <record id="group_dt_technicians" model="res.groups">
             <field name="name">Technicians</field>
             <field name="category_id" ref="dt_maintenance_category"/>
-            <field name="implied_ids" eval="[(4, ref('group_field_officials'))]"/>
+            <field name="implied_ids" eval="[(4, ref('group_dt_field_officials'))]"/>
         </record>
 
-        <record id="group_managers" model="res.groups">
+        <record id="group_dt_managers" model="res.groups">
             <field name="name">Managers</field>
             <field name="category_id" ref="dt_maintenance_category"/>
-            <field name="implied_ids" eval="[(4, ref('group_technicians'))]"/>
+            <field name="implied_ids" eval="[(4, ref('group_dt_technicians'))]"/>
         </record>
 
-        <record id="group_logistics_teams" model="res.groups">
+        <record id="group_dt_logistics_teams" model="res.groups">
             <field name="name">Inventory/Logistics Team</field>
             <field name="category_id" ref="dt_maintenance_category"/>
-            <field name="implied_ids" eval="[(4, ref('group_technicians')),(4,ref('stock.group_stock_user'))]"/>
+            <field name="implied_ids" eval="[(4, ref('group_dt_technicians')),(4,ref('stock.group_stock_user'))]"/>
         </record>
 
 

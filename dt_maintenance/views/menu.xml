@@ -4,6 +4,7 @@
         <!-- This Menu Item must have a parent and an action -->
         <menuitem id="maintenance_equipment_state_menu" name="Equipment Status" parent="maintenance.menu_maintenance_configuration" action="maintenance_equipment_state_action" sequence="2"/>
         <menuitem id="res_partner_retailer_menu" name="Retailer" parent="maintenance.menu_maintenance_configuration" action="retailer_res_partner_action" sequence="3"/>
+        <menuitem id="location_user_configuration_menu" name="Assign Location To Technician" parent="maintenance.menu_maintenance_configuration" action="location_user_configuration_action" sequence="3"/>
 
 
     </data>

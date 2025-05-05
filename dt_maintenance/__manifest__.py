@@ -23,11 +23,14 @@ Long description of module's purpose
     # always loaded
     'data': [
         'security/ir.model.access.csv',
+        'data/security.xml',
+        'data/seq.xml',
         'views/views.xml',
         'views/templates.xml',
         'views/inherited_product_tempalate.xml',
         'views/maintenance_equipment_sate.xml',
         'views/inherited_maintenance_equipment.xml',
+        'views/location_user_configuration.xml',
         'views/menu.xml',
     ],
     # only loaded in demonstration mode

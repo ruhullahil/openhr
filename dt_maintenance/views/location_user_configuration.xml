@@ -17,13 +17,33 @@
         <field name="model">location.user.configuration</field>
         <field name="arch" type="xml">
             <form string="location_user_configuration_form">
+                <header>
+                    <button name="btn_assigned" string="Assigned" class="oe_highlight" invisible="state not in ('draft')" type="object"/>
+                    <button name="btn_remove" string="Remove" class="oe_highlight" invisible="state not in ('assigned')" type="object"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
                 <sheet>
                     <group>
-                        <field name="name"/>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="assign_location"/>
+                        </group>
+                        <group>
+
+                        </group>
+                        <group name="description" string="Description">
+                            <field name="description" no_lebel="1"/>
+                        </group>
 
                     </group>
                 </sheet>
             </form>
         </field>
+    </record>
+    <record id="location_user_configuration_action" model="ir.actions.act_window">
+        <field name="name">Location Assigned</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">location.user.configuration</field>
+        <field name="view_mode">list,form</field>
     </record>
 </odoo>
