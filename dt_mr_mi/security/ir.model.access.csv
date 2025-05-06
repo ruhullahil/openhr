@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_dt_mr_mi_dt_mr_mi,dt_mr_mi.dt_mr_mi,model_dt_mr_mi_dt_mr_mi,base.group_user,1,1,1,1
+access_material_requisition_admin,dt_mr_mi.access_material_requisition_admin,model_material_requisition,base.group_system,1,1,1,1
+access_material_requisition_line_admin,dt_mr_mi.access_material_requisition_line_admin,model_material_requisition_line,base.group_system,1,1,1,1
+

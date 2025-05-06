@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <menuitem id="material_requisition_menu" name="Material Requisition" parent="maintenance.menu_m_request" action="material_requisition_action" sequence="3"/>
+
+    </data>
+</odoo>

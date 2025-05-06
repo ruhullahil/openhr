@@ -1,60 +1,30 @@
 <odoo>
   <data>
-    <!-- explicit list view definition -->
-<!--
-    <record model="ir.ui.view" id="dt_mr_mi.list">
-      <field name="name">dt_mr_mi list</field>
-      <field name="model">dt_mr_mi.dt_mr_mi</field>
-      <field name="arch" type="xml">
-        <list>
-          <field name="name"/>
-          <field name="value"/>
-          <field name="value2"/>
-        </list>
-      </field>
-    </record>
--->
+    <!-- Inherit Form View to Modify it -->
+    <record id="picking_type_form_view_inherited" model="ir.ui.view">
+        <field name="name">picking_.type.form.view.inherited</field>
+        <field name="model">stock.picking.type</field>
+        <field name="inherit_id" ref="stock.view_picking_type_form"/>
+        <field name="arch" type="xml">
 
-    <!-- actions opening views on models -->
-<!--
-    <record model="ir.actions.act_window" id="dt_mr_mi.action_window">
-      <field name="name">dt_mr_mi window</field>
-      <field name="res_model">dt_mr_mi.dt_mr_mi</field>
-      <field name="view_mode">list,form</field>
-    </record>
--->
+            <xpath expr="//field[@name='code']" position="before">
+              <field name="internal_picking_type"/>
+            </xpath>
 
-    <!-- server action to the one above -->
-<!--
-    <record model="ir.actions.server" id="dt_mr_mi.action_server">
-      <field name="name">dt_mr_mi server</field>
-      <field name="model_id" ref="model_dt_mr_mi_dt_mr_mi"/>
-      <field name="state">code</field>
-      <field name="code">
-        action = {
-          "type": "ir.actions.act_window",
-          "view_mode": "list,form",
-          "res_model": model._name,
-        }
-      </field>
+        </field>
     </record>
--->
+      <!-- Inherit Form View to Modify it -->
+      <record id="inherited_picking_form_view" model="ir.ui.view">
+          <field name="name">inherit.picking.form</field>
+          <field name="model">stock.picking</field>
+          <field name="inherit_id" ref=""/>
+          <field name="arch" type="xml">
 
-    <!-- Top menu item -->
-<!--
-    <menuitem name="dt_mr_mi" id="dt_mr_mi.menu_root"/>
--->
-    <!-- menu categories -->
-<!--
-    <menuitem name="Menu 1" id="dt_mr_mi.menu_1" parent="dt_mr_mi.menu_root"/>
-    <menuitem name="Menu 2" id="dt_mr_mi.menu_2" parent="dt_mr_mi.menu_root"/>
--->
-    <!-- actions -->
-<!--
-    <menuitem name="List" id="dt_mr_mi.menu_1_list" parent="dt_mr_mi.menu_1"
-              action="dt_mr_mi.action_window"/>
-    <menuitem name="Server to list" id="dt_mr_mi" parent="dt_mr_mi.menu_2"
-              action="dt_mr_mi.action_server"/>
--->
+              <xpath expr="//field[@name='name']" position="">
+                  <!-- Add your fields or attributes here -->
+              </xpath>
+
+          </field>
+      </record>
   </data>
 </odoo>

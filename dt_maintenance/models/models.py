@@ -39,6 +39,18 @@ class InheritResPartner(models.Model):
 
 
 
+class InheritStockMove(models.Model):
+    _inherit = 'stock.move'
+
+    spare_line_id = fields.Many2one('spare.parts.used.line')
+
+
+
+
+
+
+
+
 
 
 
