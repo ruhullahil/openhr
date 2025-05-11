@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+  <!-- Inherit Form View to Modify it -->
+  <record id="inherited_hr_job_form" model="ir.ui.view">
+      <field name="name">inherited.hr.job</field>
+      <field name="model">hr.job</field>
+      <field name="inherit_id" ref="hr.view_hr_job_form"/>
+      <field name="arch" type="xml">
+          <xpath expr="//group[@name='recruitment2']" position="inside">
+            <field name="sign_template_id"/>
+          </xpath>
+      </field>
+  </record>
+  <!-- Inherit Form View to Modify it -->
+  <record id="inherited_hr_applicant_form" model="ir.ui.view">
+      <field name="name">hr.applicant.form</field>
+      <field name="model">hr.applicant</field>
+      <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
+      <field name="arch" type="xml">
+
+          <xpath expr="//page[@name='application_details']//group[1]//group[2]" position="inside">
+            <field name="sign_template_id"/>
+          </xpath>
+          <xpath expr="//header" position="inside">
+              <button name="send_oca_sign" type="object" string="Send Sign"/>
+          </xpath>
+          <xpath expr="//div[@name='button_box']" position="inside">
+              <button class="oe_stat_button" name="navigate_sign_requests"
+                                    type="object" icon="fa-bars">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">
+                            Sign <br/> Requests
+                        </span>
+                    </div>
+                </button>
+          </xpath>
+
+      </field>
+  </record>
+</odoo>

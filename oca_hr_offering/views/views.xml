@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="oca_hr_offering.list">
+      <field name="name">oca_hr_offering list</field>
+      <field name="model">oca_hr_offering.oca_hr_offering</field>
+      <field name="arch" type="xml">
+        <list>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </list>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="oca_hr_offering.action_window">
+      <field name="name">oca_hr_offering window</field>
+      <field name="res_model">oca_hr_offering.oca_hr_offering</field>
+      <field name="view_mode">list,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="oca_hr_offering.action_server">
+      <field name="name">oca_hr_offering server</field>
+      <field name="model_id" ref="model_oca_hr_offering_oca_hr_offering"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "list,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="oca_hr_offering" id="oca_hr_offering.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="oca_hr_offering.menu_1" parent="oca_hr_offering.menu_root"/>
+    <menuitem name="Menu 2" id="oca_hr_offering.menu_2" parent="oca_hr_offering.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="oca_hr_offering.menu_1_list" parent="oca_hr_offering.menu_1"
+              action="oca_hr_offering.action_window"/>
+    <menuitem name="Server to list" id="oca_hr_offering" parent="oca_hr_offering.menu_2"
+              action="oca_hr_offering.action_server"/>
+-->
+  </data>
+</odoo>

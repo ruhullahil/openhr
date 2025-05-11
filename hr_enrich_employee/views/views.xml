@@ -1,0 +1,15 @@
+<odoo>
+  <!-- Inherit Form View to Modify it -->
+  <record id="inherit_utm_source" model="ir.ui.view">
+      <field name="name">inherit.utm.source</field>
+      <field name="model">utm.source</field>
+      <field name="inherit_id" ref="utm.utm_source_view_form"/>
+      <field name="arch" type="xml">
+          
+          <xpath expr="//field[@name='name']" position="after">
+            <field name="is_internal"/>
+          </xpath>
+          
+      </field>
+  </record>
+</odoo>

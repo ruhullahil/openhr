@@ -1,8 +1,10 @@
 from odoo import fields, models, api,_
+from odoo.exceptions import ValidationError
 
 
 class SparePartsUsedLine(models.Model):
     _name = 'spare.parts.used.line'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Description'
     _rec_name = 'product_id'
 
@@ -11,12 +13,30 @@ class SparePartsUsedLine(models.Model):
     uom_id = fields.Many2one('uom.uom', compute='_compute_uom_id', store=True, readonly=False,
                              domain="[('category_id','=',uom_category_id)]")
     quantity = fields.Float(digits='Product Unit of Measure')
-    location_id = fields.Many2one('stock.location')
-    location_dest_id = fields.Many2one('stock.location')
+    location_id = fields.Many2one('stock.location',compute='_compute_location_id',store=True,readonly=False,tracking=True)
+    location_dest_id = fields.Many2one('stock.location',compute='_compute_location_id',store=True,readonly=False,tracking=True)
     move_ids = fields.One2many('stock.move','spare_line_id')
     m_request_id = fields.Many2one('maintenance.request')
     company_id = fields.Many2one(related='m_request_id.company_id')
-    lot_id = fields.Many2one('stock.lot')
+    lot_id = fields.Many2one('stock.lot',string='Lot/Serial')
+
+    def _get_destination_location_id(self):
+        return self.m_request_id.equipment_id.location_id or self.env['stock.location'].sudo().search([('usage','=','customer')],limit=1)
+
+    @api.depends('m_request_id','m_request_id.responsible_location')
+    def _compute_location_id(self):
+        for rec in self:
+            rec.location_id = rec.m_request_id.responsible_location.id or None
+            rec.location_dest_id = rec._get_destination_location_id() or None
+
+    @api.constrains('lot_id','product_id')
+    def _check_if_lot_needed(self):
+        for rec in self:
+            if not rec.product_id or not rec.product_id.is_storable or rec.product_id.tracking == 'none':
+                continue
+            raise ValidationError('Not allow to do this operation need to add lot/serial for this product')
+
+
 
     def _get_inventory_move_values(self):
         """ Called when user manually set a new quantity (via `inventory_quantity`)
