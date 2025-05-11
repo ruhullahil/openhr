@@ -8,3 +8,4 @@ class LocationConfiguration(models.Model):
     name = fields.Char()
     location_type_id = fields.Many2one('location.type.configuration')
     parent_id = fields.Many2one('location.configuration')
+    child_ids = fields.One2many('location.configuration','parent_id')
