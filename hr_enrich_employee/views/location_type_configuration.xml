@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+    <record id="location_type_configuration_view_tree" model="ir.ui.view">
+        <field name="name">location_type_configuration_view_tree</field>
+        <field name="model">location.type.configuration</field>
+        <field name="arch" type="xml">
+            <list string="_tree" edit="1" delete="0" create="1" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="description"/>
+
+            </list>
+        </field>
+    </record>
+
+        <record id="location_type_configuration_action" model="ir.actions.act_window">
+            <field name="name">Location Type</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">location.type.configuration</field>
+            <field name="view_mode">list</field>
+        </record>
+
+    </data>
+</odoo>

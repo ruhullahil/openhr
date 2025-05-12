@@ -12,4 +12,67 @@
           
       </field>
   </record>
+    <!-- Inherit Form View to Modify it -->
+    <record id="hr_employee_public_form_view" model="ir.ui.view">
+        <field name="name">hr.employee.public.form</field>
+        <field name="model">hr.employee.public</field>
+        <field name="inherit_id" ref="hr.hr_employee_public_view_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='work_email']" position="after">
+                <field name="rank_id" readonly="1" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                <field name="religion_id" readonly="1" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                <field name="blood_group" readonly="1"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="hr_employee_form_view" model="ir.ui.view">
+        <field name="name">hr.employee.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='mobile_phone']" position="after">
+                <field name="rank_id" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                <field name="religion_id" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                <field name="blood_group"/>
+            </xpath>
+            <xpath expr="//field[@name='job_id']" position="after">
+                <field name="date_of_joining"/>
+            </xpath>
+            <xpath expr="//page[@name='hr_settings']//group[1]" position="inside">
+                <group name="employee_enrich" string="Employee Extera info">
+                    <field name="salary"/>
+                    <field name="contract_type_id"/>
+                    <field name="is_source_employee_invisible" invisible="1"/>
+                    <field name="source_id"/>
+                    <field name="source_employee_id" invisible="is_source_employee_invisible"/>
+                    <field name="reg_submission_date" readonly="1"/>
+                    <field name="last_working_date" readonly="1"/>
+                    <field name="final_setelment_date" readonly="1"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='private_email']" position="before">
+                <label for="permanent_street" string="Permanent Address"/>
+                    <div class="o_address_format">
+                        <field name="permanent_street" placeholder="Street..." class="o_address_street"/>
+                        <field name="permanent_street2" placeholder="Street 2..." class="o_address_street"/>
+                        <field name="permanent_city" placeholder="City" class="o_address_city"/>
+                        <field name="permanent_state_id" class="o_address_state" placeholder="State" options="{'no_open': True, 'no_quick_create': True}" context="{'default_country_id': private_country_id}"/>
+                        <field name="permanent_zip" placeholder="ZIP" class="o_address_zip"/>
+                        <field name="permanent_country_id" placeholder="Country" class="o_address_country" options='{"no_open": True, "no_create": True}'/>
+                    </div>
+            </xpath>
+            <xpath expr="//label[@for='private_street']" position="attributes">
+                <attribute name="string">Present Address</attribute>
+            </xpath>
+            <xpath expr="//field[@name='marital']" position="before">
+                <field name="father_name"/>
+                <field name="mother_name"/>
+            </xpath>
+
+        </field>
+    </record>
 </odoo>

@@ -1,3 +1,9 @@
 # -*- coding: utf-8 -*-
-
+from . import hr_job_rank
+from . import hr_relegion
+from . import ilocation_type_configuration
+from . import location_configuration
+from . import inherited_utm_source
+from . import inherited_work_locations
 from . import inherited_hr_employee
+

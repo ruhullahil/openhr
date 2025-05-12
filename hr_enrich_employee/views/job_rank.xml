@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_job_rank_form" model="ir.ui.view">
+        <field name="name">hr.job.rank.form</field>
+        <field name="model">hr.job.rank</field>
+        <field name="arch" type="xml">
+            <form string="hr_religion_form">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                        </group>
+                        <group name="description" string="Description">
+                            <field name="description" nolabel="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_job_rank_view_tree" model="ir.ui.view">
+        <field name="name">hr_job_rank_view_tree</field>
+        <field name="model">hr.job.rank</field>
+        <field name="arch" type="xml">
+            <list string="hr_job_rank_tree" edit="1" delete="0" create="1" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_job_rank_action" model="ir.actions.act_window">
+        <field name="name">Job Rank</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hr.job.rank</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
