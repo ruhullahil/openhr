@@ -17,11 +17,12 @@ class HrEmployee(models.Model):
     employment_location_id = fields.Many2one('location.configuration')
     age = fields.Integer(compute='_compute_age')
     employment_year = fields.Integer(compute='_compute_employment_year')
-
-
     father_name = fields.Char()
     mother_name = fields.Char()
-
+    driving_license = fields.Char()
+    relation_with_em_contact = fields.Char()
+    tin = fields.Char(string='TIN')
+    identification_type = fields.Selection([('nid','NID'),('birth','Birth Certificate')])
 
     # permanent Address
     permanent_street = fields.Char(string="Permanent Street", groups="hr.group_hr_user")
@@ -37,7 +38,7 @@ class HrEmployee(models.Model):
     # reg related info
     reg_submission_date = fields.Date()
     last_working_date = fields.Date()
-    final_setelment_date = fields.Date()
+    final_setelment_date = fields.Date(string='Final Settlement Date')
 
 
     @api.depends('source_id','source_id.is_internal')
@@ -87,6 +88,38 @@ class HrEmployeeBase(models.AbstractModel):
     blood_group = fields.Selection(
         [('a_positive', 'A+'), ('a_neg', 'A-'), ('b_positive', 'B+'), ('b_neg', 'B-'), ('ab_positive', 'AB+'),
          ('ab_neg', 'AB-')])
+
+    @api.depends('department_id')
+    def _compute_parent_id(self):
+        for employee in self:
+            employee.parent_id = None
+
+
+
+
+class InheritResUser(models.Model):
+    _inherit = 'res.users'
+
+    job_rank_id = fields.Many2one(related='employee_id.rank_id', readonly=False, related_sudo=False)
+    religion_id = fields.Many2one(related='employee_id.religion_id', readonly=False, related_sudo=False)
+    blood_group = fields.Selection(related='employee_id.blood_group', readonly=False, related_sudo=False)
+    father_name = fields.Char(related='employee_id.father_name', readonly=False, related_sudo=False)
+    mother_name = fields.Char(related='employee_id.mother_name', readonly=False, related_sudo=False)
+
+    permanent_street = fields.Char(string="Permanent Street", related='employee_id.permanent_street', readonly=False, related_sudo=False)
+    permanent_street2 = fields.Char(string="Permanent Street2", related='employee_id.permanent_street2', readonly=False, related_sudo=False)
+    permanent_city = fields.Char(string="Permanent City", related='employee_id.permanent_city', readonly=False, related_sudo=False)
+    permanent_state_id = fields.Many2one(
+        "res.country.state", string="Permanent State",related='employee_id.permanent_state_id', readonly=False, related_sudo=False)
+    permanent_zip = fields.Char(string="Permanent Zip", related='employee_id.permanent_zip', readonly=False, related_sudo=False)
+    permanent_country_id = fields.Many2one("res.country", string="Permanent Country", related='employee_id.permanent_country_id', readonly=False, related_sudo=False)
+    date_of_joining = fields.Date(related='employee_id.date_of_joining', readonly=True, related_sudo=False)
+    employment_year = fields.Integer(related='employee_id.employment_year')
+
+
+
+
+
 
 
 
