@@ -41,6 +41,7 @@
             </xpath>
             <xpath expr="//field[@name='job_id']" position="after">
                 <field name="date_of_joining"/>
+                <field name="employment_year" invisible="not date_of_joining"/>
             </xpath>
             <xpath expr="//page[@name='hr_settings']//group[1]" position="inside">
                 <group name="employee_enrich" string="Employee Extera info">
@@ -71,6 +72,9 @@
             <xpath expr="//field[@name='marital']" position="before">
                 <field name="father_name"/>
                 <field name="mother_name"/>
+            </xpath>
+            <xpath expr="//field[@name='birthday']" position="after">
+                <field name="age" invisible="not birthday"/>
             </xpath>
 
         </field>

@@ -1,3 +1,4 @@
+from dateutil.relativedelta import relativedelta
 from reportlab.graphics.transform import inverse
 
 from odoo import api, fields, models
@@ -14,6 +15,9 @@ class HrEmployee(models.Model):
     is_source_employee_invisible = fields.Boolean(compute='_compute_is_source_employee_invisible')
     source_employee_id = fields.Many2one('hr.employee')
     employment_location_id = fields.Many2one('location.configuration')
+    age = fields.Integer(compute='_compute_age')
+    employment_year = fields.Integer(compute='_compute_employment_year')
+
 
     father_name = fields.Char()
     mother_name = fields.Char()
@@ -40,6 +44,19 @@ class HrEmployee(models.Model):
     def _compute_is_source_employee_invisible(self):
         for employee in self:
                 employee.is_source_employee_invisible = not employee.source_id.is_internal
+
+    @api.depends('birthday')
+    def _compute_age(self):
+        for rec in self:
+            rec.age = rec._get_age() or 0
+
+    @api.depends('date_of_joining')
+    def _compute_employment_year(self):
+        for rec in self:
+            target_date = fields.Date.context_today(self.env.user)
+            rec.employment_year = relativedelta(target_date, self.date_of_joining).years if self.date_of_joining else 0
+
+
 
 
 
