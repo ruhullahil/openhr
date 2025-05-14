@@ -41,6 +41,9 @@ class HrEmployee(models.Model):
     reg_submission_date = fields.Date()
     last_working_date = fields.Date()
     final_setelment_date = fields.Date(string='Final Settlement Date')
+    location_type_id = fields.Many2one('location.type.configuration')
+    location_id = fields.Many2one('location.configuration',domain="[('location_type_id', '=?', location_type_id)]",)
+    is_depo = fields.Boolean(related='work_location_id.is_depo')
 
 
     @api.depends('source_id','source_id.is_internal')

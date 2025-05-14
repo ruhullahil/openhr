@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <t t-name="hr_enrich.ResumeListRenderer.RecordRow" t-inherit="hr_skills.ResumeListRenderer.RecordRow" t-inherit-mode="extension">
+        <xpath expr="//small[@class='o_resume_line_dates fw-bold']" position="replace">
+            <t t-if="data.display_type === 'classic'">
+                <small class="o_resume_line_dates fw-bold">
+                    <t t-out="formatDate(data.date_start)"/> -
+                    <t t-if="data.date_end" t-out="formatDate(data.date_end)"/>
+                    <t t-else="">Current</t>
+                </small>
+            </t>
+        </xpath>
+        <xpath expr="//h4[@class='o_resume_line_title mt-2']" position="before">
+            <small class="o_resume_line_dates fw-bold">
+                <t t-if="data.passing">
+                    Passing : <t t-out="data.passing"/>
+                </t>
+                <t t-elif="data.expire_on">
+                    Expire on : <t t-out="formatDate(data.expire_on)"/>
+                </t>
+            </small>
+        </xpath>
+    </t>
+</odoo>

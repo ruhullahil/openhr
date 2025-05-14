@@ -5,7 +5,8 @@
         <menuitem id="hr_job_rank_menu" name="Job Rank" parent="hr.menu_human_resources_configuration" action="hr_job_rank_action" sequence="5"/>
         <menuitem id="hr_religion_menu" name="Religion" parent="hr.menu_human_resources_configuration" action="hr_religion_action" sequence="6"/>
         <menuitem id="hr_location_type_menu" name="Location Type" parent="hr.menu_human_resources_configuration" action="location_type_configuration_action" sequence="7"/>
-        <menuitem id="hr_location_type_menu" name="Location Type" parent="hr.menu_human_resources_configuration" action="location_type_configuration_action" sequence="7"/>
+        <menuitem id="hr_location_type_menu" name="Location Type" parent="hr.menu_human_resources_configuration" action="location_type_configuration_action" sequence="8"/>
+        <menuitem id="hr_location_config_menu" name="Location" parent="hr.menu_human_resources_configuration" action="location_configuration_action" sequence="9"/>
 
 
     </data>

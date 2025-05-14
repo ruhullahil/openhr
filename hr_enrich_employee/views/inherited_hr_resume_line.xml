@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="resume_enrich_line_view_form" model="ir.ui.view">
+        <field name="name">hr.resume.line.form</field>
+        <field name="model">hr.resume.line</field>
+        <field name="inherit_id" ref="hr_skills.resume_line_view_form"/>
+        <field eval="200" name="priority"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date_end']" position="before">
+                <field name="passing"
+                    readonly="0"
+                    invisible="display_type != 'education'"/>
+                <field name="expire_on"
+                    readonly="0"
+                    invisible="display_type != 'course'"/>
+
+            </xpath>
+            <xpath expr="//field[@name='date_start']" position="attributes">
+                <attribute name="invisible">display_type != 'classic'</attribute>
+            </xpath>
+<!--            <xpath expr="//field[@name='channel_id']" position="attributes">-->
+<!--                <attribute name="invisible">1</attribute>-->
+<!--            </xpath>-->
+            <xpath expr="//label[@for='name']" position="attributes">
+                <attribute name="string">Institution</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

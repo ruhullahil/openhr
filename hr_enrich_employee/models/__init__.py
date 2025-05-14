@@ -5,5 +5,6 @@ from . import ilocation_type_configuration
 from . import location_configuration
 from . import inherited_utm_source
 from . import inherited_work_locations
+from . import inherit_resume_line
 from . import inherited_hr_employee
 

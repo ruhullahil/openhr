@@ -1,4 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="location_configuration_view_form" model="ir.ui.view">
+        <field name="name">location_configuration_view_form</field>
+        <field name="model">location.configuration</field>
+        <field name="arch" type="xml">
+            <form string="location_configuration_form">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" name="navigate_child_locations"
+                                type="object" icon="fa-bars"
+                                invisible="child_count == 0">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="child_count"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    <field name="child_location_type_id" options="{'no_create': True, 'no_open': True}"/>
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="location_type_id"/>
+                            <field name="parent_location_type_id" invisible="1"/>
+                            <div class="o_row">
+                                <b><field name="parent_location_type_id" invisible="not parent_location_type_id" class="col-3" options="{'no_create': True, 'no_open': True}"/> </b>
+                                <p></p>
+                                <field name="parent_id" invisible="not parent_location_type_id" class="col-6"/>
+                            </div>
+
+
+
+
+                        </group>
+                        <group>
+                            <field name="child_ids" invisible="1"/>
+                        </group>
+
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="location_configuration_view_tree" model="ir.ui.view">
+        <field name="name">location_configuration_view_tree</field>
+        <field name="model">location.configuration</field>
+        <field name="arch" type="xml">
+            <list string="location_configuration_tree">
+                <field name="name"/>
+                <field name="location_type_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="location_configuration_action" model="ir.actions.act_window">
+        <field name="name">Locations</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">location.configuration</field>
+        <field name="view_mode">list,form</field>
+    </record>
 
 </odoo>

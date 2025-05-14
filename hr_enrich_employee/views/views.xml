@@ -76,7 +76,15 @@
                         <field name="source_id" string="Source of Hiring"/>
                         <field name="source_employee_id" invisible="is_source_employee_invisible"/>
 
+
                     </group>
+                </xpath>
+
+                <xpath expr="//div[@id='o_work_employee_main']//group[1]" position="inside">
+                    <field name="work_location_id"/>
+                    <field name="is_depo" invisible="1"/>
+                    <field name="location_type_id" invisible="not is_depo"/>
+                    <field name="location_id" invisible="not is_depo or not location_type_id"/>
                 </xpath>
                 <xpath expr="//field[@name='private_email']" position="before">
                     <label for="permanent_street" string="Permanent Address"/>

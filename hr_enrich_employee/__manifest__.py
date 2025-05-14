@@ -27,6 +27,9 @@ Long description of module's purpose
         'views/hr_religion.xml',
         'views/location_type_configuration.xml',
         'views/views.xml',
+        'views/inherited_hr_resume_line.xml',
+        'views/location_configuration.xml',
+        'views/inherited_work_location.xml',
         'views/menu.xml',
         'views/templates.xml',
     ],
@@ -34,5 +37,10 @@ Long description of module's purpose
     'demo': [
         'demo/demo.xml',
     ],
+    'assets': {
+            'web.assets_backend': [
+                'hr_enrich_employee/static/src/xml/inherit_resume_widget.xml',
+            ],
+        }
 }
 

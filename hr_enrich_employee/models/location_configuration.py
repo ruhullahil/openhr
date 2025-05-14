@@ -1,4 +1,4 @@
-from odoo import fields, models, api
+from odoo import fields, models, api,_
 
 
 class LocationConfiguration(models.Model):
@@ -36,4 +36,17 @@ class LocationConfiguration(models.Model):
         for rec in self:
 
             rec.child_count = len(rec.child_ids) or 0
+
+    def navigate_child_locations(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'location.configuration',
+            'view_mode': 'list,form',
+            'name': _(f"{self.child_location_type_id.display_name}"),
+            'domain': [('id', 'in', self.child_ids.ids)],
+        }
+
+    def _compute_display_name(self):
+        for location in self:
+            location.display_name = f'{location.location_type_id.display_name} : {location.name}'
 

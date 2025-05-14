@@ -5,6 +5,7 @@ class HrJobRank(models.Model):
     _name = 'hr.job.rank'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'HR Job Rank'
+    _order = 'sequence, id'
 
     name = fields.Char(tracking=True)
     description = fields.Text()
