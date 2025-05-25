@@ -1,5 +1,13 @@
-from odoo import fields, models, api
+from odoo import fields, models, api,_
 
+
+
+# ---------------------------------------------------------------------------------------------------
+#                                                   Condition related models
+#
+#   use case
+#
+# -----------------------------------------------------------------------------------------------------
 
 class AllocationCondition(models.Model):
     _name = 'leave.condition'
@@ -25,6 +33,16 @@ class LeaveConditionLine(models.Model):
     to_range = fields.Integer()
     quantity = fields.Float()
 
+# ----------------------------------------------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------------------------------------------------------------------
+#                                               configuration models
+# ------------------------------------------------------------------------------------------------------------------------
+
+
+
 
 class HrDefaultConfiguration(models.Model):
     _name = 'hr.default.leave.configuration'
@@ -37,10 +55,18 @@ class HrDefaultConfiguration(models.Model):
     start_from = fields.Date()
     end_date = fields.Date()
     state = fields.Selection([('draft', 'Draft'),('waiting','Waiting'), ('running', 'Running'), ('expire', 'Expire')],deafult='draft')
+    allocation_lines = fields.One2many('hr.default.leave.configuration.line','configuration_id')
 
 
     def change_stage(self):
         pass
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            vals['name'] = self.env['ir.sequence'].next_by_code(
+                'default.leave.con.seq') or _("New")
+        return super().create(vals_list)
 
 
 class HrDefaultConfigLine(models.Model):
@@ -49,15 +75,17 @@ class HrDefaultConfigLine(models.Model):
     _rec_name = 'configuration_id'
 
     configuration_id = fields.Many2one('hr.default.leave.configuration')
-    company_id = fields.Many2one('res.company', related='configuration_id.company_id')
-    department_id = fields.Many2one('hr.department', related='configuration_id.department_id')
-    leave_type_id = fields.Many2one('hr.leave.type')
+    company_id = fields.Many2one('res.company', related='configuration_id.company_id',store=True)
+    department_id = fields.Many2one('hr.department', related='configuration_id.department_id',store=True)
+    leave_type_id = fields.Many2one('hr.leave.type',domain="[('allocation_validation_type','=','no_validation')]")
 
     # renew related fields
     is_auto_renew = fields.Boolean()
     renew_cycle = fields.Selection(
         [('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly'), ('yearly', 'Yearly')])
     renew_base = fields.Selection([('fixed', 'Fixed'), ('join_date', 'Join Date'),('fiscal','Fiscal Year')])
+    # fiscal year field is visible for fiscal selection and if we select it , renew base on fiscal year
+    #
     fiscal_year_id = fields.Many2one('account.fiscal.year')
     renew_day = fields.Integer()
 
@@ -83,3 +111,8 @@ class HrDefaultConfigLine(models.Model):
     # TODO :Have to add allocation condition_id
     allocation_condition_id = fields.Many2one('leave.condition',domain="[('condition_for','=','allocation')]")
     allocation_duration = fields.Float()
+    allocation_ids = fields.One2many('hr.leave.allocation','config_line_id')
+    # last allocation related info
+    last_allocation_id = fields.Many2one('hr.leave.allocation',compute='_compute_last_allocation_id')
+    last_allocation_date = fields.Date()
+    # TODO : need to add allocation cycle releted info

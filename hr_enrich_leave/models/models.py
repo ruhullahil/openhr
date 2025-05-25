@@ -12,6 +12,10 @@ class HrEmployee(models.Model):
 
 
     def _get_consumed_leaves(self, leave_types, target_date=False, ignore_future=False):
+
+        # TODO: this method need to be re write for balance
+
+
         employees = self or self._get_contextual_employee()
         leaves_domain = [
             ('holiday_status_id', 'in', leave_types.ids),

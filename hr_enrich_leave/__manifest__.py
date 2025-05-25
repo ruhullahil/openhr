@@ -25,6 +25,8 @@ Long description of module's purpose
         'security/ir.model.access.csv',
         'views/views.xml',
         'views/inherited_leave_type.xml',
+        'views/hr_leave_default_configuration.xml',
+        'views/menu.xml',
         'views/templates.xml',
     ],
     # only loaded in demonstration mode

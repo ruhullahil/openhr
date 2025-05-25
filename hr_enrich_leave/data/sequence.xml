@@ -3,7 +3,7 @@
     <data noupdate="1">
 
         <record id="default_leave_config_sequence" model="ir.sequence">
-            <field name="name">Default leave Confog</field>
+            <field name="name">Default leave Config</field>
             <field name="code">default.leave.con.seq</field>
             <field name="prefix">DL</field>
             <field name="padding">2</field>

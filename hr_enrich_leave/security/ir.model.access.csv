@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_hr_alter_leave_sequence_admin,hr_enrich_leave.hr_alter_leave_sequence_admin,model_hr_alter_leave_sequence,base.group_user,1,1,1,1
+access_leave_condition_admin,hr_enrich_leave.hr_leave_condition_admin,model_leave_condition,base.group_system,1,1,1,1
+access_leave_condition_line_admin,hr_enrich_leave.hr_leave_condition_line_admin,model_leave_condition_line,base.group_system,1,1,1,1
+access_hr_default_leave_configuration_admin,hr_enrich_leave.hr_default_leave_configuration_admin,model_hr_default_leave_configuration,base.group_system,1,1,1,1
