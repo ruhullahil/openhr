@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Form View to Modify it -->
+    <record id="inherit_leave_type_form_view" model="ir.ui.view">
+        <field name="name">inherit.leave.type.form</field>
+        <field name="model">hr.leave.type</field>
+        <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//group[@name='configuration']" position="inside">
+                <field name="is_check_auto_clear" invisible="1"/>
+                <field name="rounding_type"/>
+                <field name="max_consecutive_period"/>
+                <field name="department_id"/>
+                <field name="is_gender_specific_leave" />
+                <field name="apply_gender" invisible="not is_gender_specific_leave" required="is_gender_specific_leave"/>
+                <field name="is_religion_specific_leave"/>
+                <field name="apply_religion" invisible="not is_religion_specific_leave" required="is_religion_specific_leave"/>
+                <field name="is_compensatory_leave"/>
+                <field name="allowed_with_in_days" invisible="not is_compensatory_leave" required="is_compensatory_leave"/>
+                <field name="restriction" invisible="not is_compensatory_leave" required="is_compensatory_leave"/>
+                <field name="is_auto_merge"/>
+                <field name="auto_alter_max_consecutive_exit" invisible="not is_auto_merge" required="is_auto_merge"/>
+                <field name="alter_sequence" invisible="not auto_alter_max_consecutive_exit" required="auto_alter_max_consecutive_exit">
+                    <list create="1" editable="bottom">
+                        <field name="sequence" widget='handle'/>
+                        <field name="leave_type"/>
+                        <field name="applicability"/>
+                    </list>
+                </field>
+
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

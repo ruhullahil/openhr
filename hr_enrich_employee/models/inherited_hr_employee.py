@@ -20,7 +20,9 @@ class HrEmployee(models.Model):
     age = fields.Integer(compute='_compute_age')
     employment_year = fields.Integer(compute='_compute_employment_year')
     father_name = fields.Char()
+    father_occupation = fields.Char()
     mother_name = fields.Char()
+    mother_occupation = fields.Char()
     driving_license = fields.Char()
     relation_with_em_contact = fields.Char()
     tin = fields.Char(string='TIN')
@@ -35,15 +37,82 @@ class HrEmployee(models.Model):
         domain="[('country_id', '=?', permanent_country_id)]",
         groups="base.group_user")
     permanent_zip = fields.Char(string="Permanent Zip", groups="base.group_user")
+    permanent_district_id = fields.Many2one('res.country.district')
     permanent_country_id = fields.Many2one("res.country", string="Permanent Country", groups="base.group_user")
+    # present address
+    current_district_id = fields.Many2one('res.country.district')
+
+    #additional info
+    passport_issue_date = fields.Date()
+    passport_expire_date = fields.Date()
+    marriage_date = fields.Date()
+
+    spouse_occupation = fields.Char()
+
+    # helth info
+    smoking_info = fields.Selection([('smoker','Smoker'),('non_smoker','Non Smoker')])
+    chronic_disease_info = fields.One2many('hr.disease.info','employee_id')
+    other_details = fields.Html()
+
+
+    # extera activity
+    extera_activity = fields.Text()
+    club_member = fields.Char()
+    is_show_shirt_size = fields.Boolean()
+    tshirt_size = fields.Char()
+    is_show_jacket_size = fields.Boolean()
+    jacket_size = fields.Char()
+
+
 
     # reg related info
     reg_submission_date = fields.Date()
     last_working_date = fields.Date()
     final_setelment_date = fields.Date(string='Final Settlement Date')
+
+    # employee job location related info
     location_type_id = fields.Many2one('location.type.configuration')
     location_id = fields.Many2one('location.configuration',domain="[('location_type_id', '=?', location_type_id)]",)
     is_depo = fields.Boolean(related='work_location_id.is_depo')
+    hierarchy_location = fields.Html(compute='_compute_hierarchy_location')
+
+    # dependent related info
+    dependent_info = fields.One2many('hr.dependent.relation','employee_id')
+
+    # Nominee info
+    nominee_name = fields.Char()
+    nominee_dob = fields.Date()
+    nominee_nid = fields.Char()
+    nominee_img = fields.Image()
+    nominee_attachment_ids = fields.Many2many('ir.attachment', ondelete='cascade', auto_join=True, copy=False)
+
+
+    def _get_hierarchy(self,location_id):
+        location_list = []
+        while location_id:
+            location_list.append(location_id.display_name)
+            location_id = location_id.parent_id
+        lists =  location_list[::-1]
+        data = '''<ul class="list-group">'''
+        for index,name in enumerate(lists,0):
+            data +=self._make_order_list_html(name,index)
+        data +=' </ul>'
+        print(data)
+        return data
+
+
+
+
+
+    def _make_order_list_html(self,name,index):
+        return f'<li class="list-group-item px-{index*2}" style="border:none"> <div name = "state" class ="o_field_widget o_readonly_modifier o_field_badge text-success"><span class ="badge rounded-pill text-bg-success">{name} </span > </div></li>'
+
+    @api.depends('location_id')
+    def _compute_hierarchy_location(self):
+        for rec in self:
+            location_list = rec._get_hierarchy(self.location_id)
+            rec.hierarchy_location = location_list
+
 
 
     @api.depends('source_id','source_id.is_internal')
