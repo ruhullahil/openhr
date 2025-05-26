@@ -32,22 +32,15 @@ class AllocationCondition(models.Model):
     application_condition = fields.Selection([('date', 'Date Range'), ('value', 'Value Range')],
                                              help='This field use for applicability for date range ignore the year year will be ignored in calculation')
 
-    def _get_amount(self,local_dict):
-        employee = local_dict['employee']
-        line = local_dict['line']
-        if line.allocation_type == 'fixed':
-            return line.allocation_duration
-        elif line.allocation_type == 'conditional':
-            pass
 
-        return 0
 
 
 
     def _execute_python_code(self,local_dict):
 
         try:
-            return float(safe_eval(self.amount_python_compute, local_dict,mode="exec"))
+            safe_eval(self.amount_python_compute, local_dict,mode="exec")
+            return local_dict.get('result',0)
         except:
             raise UserError(
                 _(f'{self.amount_python_compute} not executable !!'))
@@ -62,6 +55,26 @@ class AllocationCondition(models.Model):
         # }
         # code = definition.compute_code.strip()
         # safe_eval(code, cxt, mode="exec", nocopy=True)
+
+
+    def condition_allocation_execute(self,local_dict):
+        self.ensure_one()
+        if self.condition_type != 'condition':
+            return 0
+        # TODO: have to add conditionatcondition_allocation_executeional method
+        return 0
+
+    def _get_allocation_amount(self,local_dict):
+        self.ensure_one()
+        employee = local_dict['employee']
+        line = local_dict['line']
+        if not self.condition_for or self.condition_for != 'allocation':
+            return 0
+        if self.condition_type == 'formula':
+            if 'result' not in local_dict:
+                local_dict['result'] = 0
+            return self._execute_python_code(local_dict)
+        return self.condition_allocation_execute(local_dict)
 
 
 
@@ -114,6 +127,29 @@ class HrDefaultConfiguration(models.Model):
         return super().create(vals_list)
 
 
+    def configurate_expiration_check(self):
+        current_date = fields.Date.context_today(self)
+        if self.state == 'expire' and not self.end_date:
+            self.end_date = current_date
+        elif self.state == 'running' and self.end_date and self.end_date < current_date:
+            self.state = 'expire'
+        return self.state == 'running'
+
+
+
+
+
+
+    def condition_wise_auto_allocation(self):
+        configurations = self.sudo().search([])
+        for configuration in configurations:
+            if not configuration.configurate_expiration_check():
+                continue
+
+
+
+
+
 class HrDefaultConfigLine(models.Model):
     _name = 'hr.default.leave.configuration.line'
     _description = 'HrDefaultConfigLine'
@@ -155,7 +191,6 @@ class HrDefaultConfigLine(models.Model):
     is_able_carry_over = fields.Boolean()
     carry_over_type = fields.Selection([('conditional', 'Conditional'), ('fixed', 'Fixed')])
     max_carry_over = fields.Float(compute='_compute_max_carry_over', store=True, readonly=False)
-    # Todo : Have to add conditional carry over model
     carry_over_condition_id = fields.Many2one('leave.condition',domain="[('condition_for','=','carry_over')]")
     is_able_use_carry_over = fields.Boolean()
     max_carry_over_use = fields.Float()
@@ -171,7 +206,6 @@ class HrDefaultConfigLine(models.Model):
 
     # Allocation related fields
     allocation_type = fields.Selection([('fixed', 'Fixed'), ('conditional', 'Conditional')])
-    # TODO :Have to add allocation condition_id
     allocation_condition_id = fields.Many2one('leave.condition',domain="[('condition_for','=','allocation')]")
     allocation_duration = fields.Float()
     allocation_ids = fields.One2many('hr.leave.allocation','config_line_id')
@@ -180,9 +214,19 @@ class HrDefaultConfigLine(models.Model):
     # last_allocation_start_date = fields.Date(compute='_compute_last_allocation_info',store=True)
     # last_allocation_end_date = fields.Date(compute='_compute_last_allocation_info',store=True)
     # last_allocation_corn_date = fields.Date()
-    # # TODO : need to add allocation cycle releted info
     #
     # @api.depends('allocation_ids','allocation_ids.state','allocation_ids.')
     # def _compute_last_allocation_info(self):
     #     for configuration in self:
     #         configuration.
+
+
+    def _get_allocation_amount(self,local_dict):
+        employee = local_dict['employee']
+        line = local_dict['line']
+        if line.allocation_type == 'fixed':
+            return line.allocation_duration
+        elif line.allocation_type == 'conditional':
+            return line.allocation_condition_id.get_conditional_allocation(local_dict)
+
+        return 0
