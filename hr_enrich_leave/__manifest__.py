@@ -23,6 +23,7 @@ Long description of module's purpose
     # always loaded
     'data': [
         'security/ir.model.access.csv',
+        'data/sequence.xml',
         'views/views.xml',
         'views/inherited_leave_type.xml',
         'views/hr_leave_default_configuration.xml',

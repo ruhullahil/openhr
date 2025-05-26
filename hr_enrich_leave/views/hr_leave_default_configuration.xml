@@ -17,11 +17,11 @@
                 </div>
                     <group>
                         <group>
-                            <field name="company_id"/>
+                            <field name="company_id" required="1"/>
                             <field name="department_id"/>
                         </group>
                         <group>
-                            <field name="start_date"/>
+                            <field name="start_from" required="1"/>
                             <field name="end_date"/>
                         </group>
                     </group>
@@ -50,6 +50,7 @@
                                             <field name="renew_base" invisible="not is_auto_renew" required="is_auto_renew"/>
                                             <field name="renew_day" invisible="not is_auto_renew or renew_base == 'fiscal'" required="renew_base != 'fiscal'"/>
                                             <field name="fiscal_year_id" invisible="not is_auto_renew or renew_base != 'fiscal'" required="renew_base == 'fiscal'"/>
+                                            <field name="remain_month" invisible="not is_auto_renew"/>
                                         </group>
                                         <group name="carry" string="Carry-Over Info">
                                             <field name="is_able_carry_over"/>
@@ -58,7 +59,11 @@
                                             <field name="carry_over_condition_id" invisible="not is_able_carry_over or carry_over_type != 'conditional'" required="carry_over_type == 'conditional'"/>
                                             <field name="is_able_use_carry_over" invisible="not is_able_carry_over"/>
                                             <field name="max_carry_over_use" invisible="not is_able_use_carry_over"/>
-
+                                        </group>
+                                        <group name="allocation" string="Allocation Info">
+                                            <field name="allocation_type" required="1"/>
+                                            <field name="allocation_duration" required="1"/>
+                                            <field name="allocation_condition_id" invisible="allocation_type != 'conditional'" required="allocation_type == 'conditional'"/>
                                         </group>
                                     </group>
 
@@ -69,5 +74,39 @@
                 </sheet>
             </form>
         </field>
+    </record>
+    <record id="list_configuration_view_tree" model="ir.ui.view">
+        <field name="name">list_configuration_view_tree</field>
+        <field name="model">hr.default.leave.configuration</field>
+        <field name="arch" type="xml">
+            <list string="list_configuration_tree">
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="department_id"/>
+                <field name="start_from"/>
+                <field name="end_date"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'running'" decoration-warning="state == 'waiting'" decoration-muted="state == 'expire'"/>
+            </list>
+        </field>
+    </record>
+    <record id="leave_configuration_search" model="ir.ui.view">
+       <field name="name">leave.configuration.search</field>
+       <field name="model">hr.default.leave.configuration</field>
+        <field name="arch" type="xml">
+            <search string="list configuration">
+                <field name="name" filter_domain="[('name','ilike',self)]" string="Name"/>
+                <field name="company_id"/>
+                <filter string="Running" name="running" domain="[('state', '=', 'running')]"/>
+                <filter string="Expire" name="expire" domain="[('state', '=', 'expire')]"/>
+                <filter string="Waiting" name="waiting" domain="[('state', '=', 'waiting')]"/>
+
+        </search>
+       </field>
+    </record>
+    <record id="hr_leave_configuration_action" model="ir.actions.act_window">
+        <field name="name">Leave Configuration</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hr.default.leave.configuration</field>
+        <field name="view_mode">list,form</field>
     </record>
 </odoo>

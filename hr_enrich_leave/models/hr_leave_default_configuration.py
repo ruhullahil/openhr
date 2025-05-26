@@ -1,5 +1,5 @@
 from odoo import fields, models, api,_
-
+from dateutil.relativedelta import relativedelta
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -16,7 +16,16 @@ class AllocationCondition(models.Model):
     name = fields.Char()
     condition_for = fields.Selection([('allocation', 'Allocation'), ('carry_over', 'Carry Over')])
     condition_type = fields.Selection([('formula', 'Formula'), ('condition', 'Condition')])
-    formula = fields.Char()
+    amount_python_compute = fields.Text(
+        string="Python Code",
+        default="""# Available variables:
+    #-------------------------------
+    # employee: hr.employee object
+    # line: hr.default.leave.configuration.line object
+    # Example:
+    #-------------------------------
+    # result = line.allocation_duration * (1/12 * line.remain_month)""",  # noqa: E501
+    )
     application_condition = fields.Selection([('date', 'Date Range'), ('value', 'Value Range')],
                                              help='This field use for applicability for date range ignore the year year will be ignored in calculation')
 
@@ -54,7 +63,7 @@ class HrDefaultConfiguration(models.Model):
     name = fields.Char()
     start_from = fields.Date()
     end_date = fields.Date()
-    state = fields.Selection([('draft', 'Draft'),('waiting','Waiting'), ('running', 'Running'), ('expire', 'Expire')],deafult='draft')
+    state = fields.Selection([('draft', 'Draft'),('waiting','Waiting'), ('running', 'Running'), ('expire', 'Expire')],default='draft')
     allocation_lines = fields.One2many('hr.default.leave.configuration.line','configuration_id')
 
 
@@ -87,7 +96,24 @@ class HrDefaultConfigLine(models.Model):
     # fiscal year field is visible for fiscal selection and if we select it , renew base on fiscal year
     #
     fiscal_year_id = fields.Many2one('account.fiscal.year')
-    renew_day = fields.Integer()
+    renew_day = fields.Integer(help='count hole year as 365 day and day is year of that day')
+    remain_month = fields.Integer(compute='_compute_remain_month')
+
+    def _get_end_date(self):
+        self.ensure_one()
+        current_yer_last_date = fields.Date.context_today(self).replace(month=12, day=31)
+        return self.fiscal_year_id.date_to or current_yer_last_date
+
+    @api.depends('renew_base','fiscal_year_id','renew_day','renew_day')
+    def _compute_remain_month(self):
+        date = fields.Date.context_today(self)
+        for line in self:
+            end_day = line._get_end_date()
+            duration = relativedelta(end_day,date)
+            months = duration.months
+            days = duration.days
+            months += 1 if days > 15 else 0
+            line.remain_month = 1 if date > end_day else months
 
     # carry over related fields
     is_able_carry_over = fields.Boolean()
@@ -97,6 +123,7 @@ class HrDefaultConfigLine(models.Model):
     carry_over_condition_id = fields.Many2one('leave.condition',domain="[('condition_for','=','carry_over')]")
     is_able_use_carry_over = fields.Boolean()
     max_carry_over_use = fields.Float()
+
 
     @api.depends('carry_over_type')
     def _compute_max_carry_over(self):
@@ -113,6 +140,13 @@ class HrDefaultConfigLine(models.Model):
     allocation_duration = fields.Float()
     allocation_ids = fields.One2many('hr.leave.allocation','config_line_id')
     # last allocation related info
-    last_allocation_id = fields.Many2one('hr.leave.allocation',compute='_compute_last_allocation_id')
-    last_allocation_date = fields.Date()
-    # TODO : need to add allocation cycle releted info
+    # last_allocation_id = fields.Many2one('hr.leave.allocation',compute='_compute_last_allocation_info',store=True)
+    # last_allocation_start_date = fields.Date(compute='_compute_last_allocation_info',store=True)
+    # last_allocation_end_date = fields.Date(compute='_compute_last_allocation_info',store=True)
+    # last_allocation_corn_date = fields.Date()
+    # # TODO : need to add allocation cycle releted info
+    #
+    # @api.depends('allocation_ids','allocation_ids.state','allocation_ids.')
+    # def _compute_last_allocation_info(self):
+    #     for configuration in self:
+    #         configuration.
