@@ -1,6 +1,9 @@
 from odoo import fields, models, api,_
 from dateutil.relativedelta import relativedelta
 
+from odoo.exceptions import UserError
+from odoo.tools.safe_eval import safe_eval
+
 
 # ---------------------------------------------------------------------------------------------------
 #                                                   Condition related models
@@ -28,6 +31,39 @@ class AllocationCondition(models.Model):
     )
     application_condition = fields.Selection([('date', 'Date Range'), ('value', 'Value Range')],
                                              help='This field use for applicability for date range ignore the year year will be ignored in calculation')
+
+    def _get_amount(self,local_dict):
+        employee = local_dict['employee']
+        line = local_dict['line']
+        if line.allocation_type == 'fixed':
+            return line.allocation_duration
+        elif line.allocation_type == 'conditional':
+            pass
+
+        return 0
+
+
+
+    def _execute_python_code(self,local_dict):
+
+        try:
+            return float(safe_eval(self.amount_python_compute, local_dict,mode="exec"))
+        except:
+            raise UserError(
+                _(f'{self.amount_python_compute} not executable !!'))
+        # cxt = {
+        #     'object': self,
+        #     'env': self.env,
+        #
+        #     'date': date,
+        #     'datetime': datetime,
+        #     'timedelta': timedelta,
+        #     'time': time,
+        # }
+        # code = definition.compute_code.strip()
+        # safe_eval(code, cxt, mode="exec", nocopy=True)
+
+
 
 
 class LeaveConditionLine(models.Model):
