@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
             <form string="hr_leave_default_configuration_form">
                 <header>
-<!--                    <button name="" string="" class="oe_highlight" states="" type=""/>-->
+                    <button name="condition_wise_auto_allocation" string="Auto Allocation" class="oe_highlight" type="object"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
