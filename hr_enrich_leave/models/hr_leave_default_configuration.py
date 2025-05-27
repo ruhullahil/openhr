@@ -175,6 +175,7 @@ class HrDefaultConfigLine(models.Model):
     # carry over related fields
     is_able_carry_over = fields.Boolean()
     carry_over_type = fields.Selection([('conditional', 'Conditional'), ('fixed', 'Fixed')])
+    max_carry_over_year = fields.Float()
     max_carry_over = fields.Float(compute='_compute_max_carry_over', store=True, readonly=False)
     carry_over_condition_id = fields.Many2one('leave.condition', domain="[('condition_for','=','carry_over')]")
     is_able_use_carry_over = fields.Boolean()
@@ -194,17 +195,6 @@ class HrDefaultConfigLine(models.Model):
     allocation_duration = fields.Float()
     allocation_ids = fields.One2many('hr.leave.allocation', 'config_line_id')
 
-    # last allocation related info
-    # last_allocation_id = fields.Many2one('hr.leave.allocation',compute='_compute_last_allocation_info',store=True)
-    # last_allocation_start_date = fields.Date(compute='_compute_last_allocation_info',store=True)
-    # last_allocation_end_date = fields.Date(compute='_compute_last_allocation_info',store=True)
-    # last_allocation_corn_date = fields.Date()
-    #
-    # @api.depends('allocation_ids','allocation_ids.state','allocation_ids.')
-    # def _compute_last_allocation_info(self):
-    #     for configuration in self:
-    #         configuration.
-
     def _get_allocation_amount(self, local_dict):
         line = local_dict['line']
         if line.allocation_type == 'fixed':
@@ -213,6 +203,12 @@ class HrDefaultConfigLine(models.Model):
             return line.allocation_condition_id.get_conditional_allocation(local_dict)
 
         return 0
+
+    # eligibility  related fields
+    is_need_eligibility = fields.Boolean(default=True)
+    eligibility_from = fields.Selection([('joining','Joining')])
+    eligibility_interval = fields.Selection([('day','Day'),('month','Month'),('year','Year')])
+    eligibility_time = fields.Float()
 
     #     -----------------------------------------------------------------------------------------------------------------------------------------------
     #                                    Business Method
@@ -274,12 +270,41 @@ class HrDefaultConfigLine(models.Model):
             domain += date_domain
 
         allocation_info = self.env['hr.leave.allocation'].sudo().search(domain,order='id desc',limit=1)
-
         return allocation_info
+
+
+
+    def _get_eligibility_date_from_joining(self,joining):
+        if self.eligibility_interval == 'day':
+            return joining + relativedelta(days=self.eligibility_time) - relativedelta(days=1)
+        elif self.eligibility_interval == 'month':
+            return joining + relativedelta(months=self.eligibility_time) - relativedelta(days=1)
+        elif self.eligibility_interval == 'year':
+            return joining + relativedelta(years=self.eligibility_time) - relativedelta(days=1)
+        else:
+            return joining
+
+
+
+    def _check_eligibility_of_employee(self,employee):
+        self.ensure_one()
+        if not self.is_need_eligibility:
+            return True
+        if self.eligibility_from != 'joining':
+            return True
+        current_date = fields.Date.context_today(self)
+        eligible_date = self._get_eligibility_date_from_joining(employee.date_of_joining or current_date)
+        if current_date >= eligible_date:
+            return True
+        return False
 
 
     def check_can_allocate_able(self, employee):
         self.ensure_one()
+        # check eligible of employee
+        if not self._check_eligibility_of_employee(employee):
+            return False
+        # Previous allocation Related check
         allocation = self.check_previous_allocation_related_info(employee)
         if not allocation:
             return True
@@ -303,7 +328,7 @@ class HrDefaultConfigLine(models.Model):
     def prepare_employee_allocation(self,employee):
         self.ensure_one()
         start_date = self._get_start_date(employee)
-        end_date = self._get_interval_end(start_date)
+        end_date = self._get_interval_end(start_date) if self.renew_cycle else None
         local_dict = self._genarate_local_dict(employee)
         allocation_count = self._get_allocation_amount(local_dict=local_dict)
         allocation_unit = 'number_of_days' if self.leave_type_id.request_unit != 'hour' else 'number_of_hours'
@@ -328,7 +353,6 @@ class HrDefaultConfigLine(models.Model):
             for employee in employees:
                 if line.check_can_allocate_able(employee):
                     allocation_datas.append(line.prepare_employee_allocation(employee))
-
         allocations = self.env['hr.leave.allocation'].sudo().create(allocation_datas)
         print(allocations)
 

@@ -48,13 +48,14 @@
                                             <field name="is_auto_renew"/>
                                             <field name="renew_cycle" invisible="not is_auto_renew" required="is_auto_renew"/>
                                             <field name="renew_base" invisible="not is_auto_renew" required="is_auto_renew"/>
-                                            <field name="renew_day" invisible="not is_auto_renew or renew_base == 'fiscal'" required="renew_base != 'fiscal'"/>
+                                            <field name="renew_day" invisible="not is_auto_renew or renew_base != 'fixed'" required="renew_base == 'fixed'"/>
                                             <field name="fiscal_year_id" invisible="not is_auto_renew or renew_base != 'fiscal'" required="renew_base == 'fiscal'"/>
                                             <field name="remain_month" invisible="not is_auto_renew"/>
                                         </group>
                                         <group name="carry" string="Carry-Over Info">
                                             <field name="is_able_carry_over"/>
                                             <field name="carry_over_type" invisible="not is_able_carry_over" required="is_able_carry_over"/>
+                                            <field name="max_carry_over_year" invisible="not is_able_carry_over" required="is_able_carry_over"/>
                                             <field name="max_carry_over" invisible="not is_able_carry_over" required="is_able_carry_over"/>
                                             <field name="carry_over_condition_id" invisible="not is_able_carry_over or carry_over_type != 'conditional'" required="carry_over_type == 'conditional'"/>
                                             <field name="is_able_use_carry_over" invisible="not is_able_carry_over"/>
@@ -64,6 +65,16 @@
                                             <field name="allocation_type" required="1"/>
                                             <field name="allocation_duration" required="1"/>
                                             <field name="allocation_condition_id" invisible="allocation_type != 'conditional'" required="allocation_type == 'conditional'"/>
+                                        </group>
+                                        <group name="eligibility" string="Eligibility">
+                                            <field name="is_need_eligibility"/>
+                                            <field name="eligibility_from" string="Eligibility Condition From" invisible="not is_need_eligibility" required="is_need_eligibility"/>
+                                            <label for="eligibility_time" string="Eligible After" invisible="not is_need_eligibility" required="is_need_eligibility"/>
+                                            <div class="o_row">
+                                                <field name="eligibility_time" placeholder="1" invisible="not is_need_eligibility" required="is_need_eligibility"/>
+                                                <field name="eligibility_interval" invisible="not is_need_eligibility" required="is_need_eligibility"/>
+                                            </div>
+
                                         </group>
                                     </group>
 
