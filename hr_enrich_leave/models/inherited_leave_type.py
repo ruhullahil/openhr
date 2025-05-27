@@ -53,6 +53,19 @@ class InheritHrLeaveType(models.Model):
                 rec.allowed_with_in_days = 0
 
 
+    def get_applicability_employee_domain(self):
+        self.ensure_one()
+        domain = []
+        if self.department_id:
+            domain.append(('department_id','=',self.department_id.id))
+        if self.is_gender_specific_leave:
+            domain.append(('gender','=',self.apply_gender))
+        if self.is_religion_specific_leave:
+            domain.append(('religion_id','=',self.apply_religion))
+        return domain
+
+
+
 
 
 

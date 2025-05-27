@@ -113,7 +113,7 @@ class HrDefaultConfiguration(models.Model):
     start_from = fields.Date()
     end_date = fields.Date()
     state = fields.Selection([('draft', 'Draft'),('waiting','Waiting'), ('running', 'Running'), ('expire', 'Expire')],default='draft')
-    allocation_lines = fields.One2many('hr.default.leave.configuration.line','configuration_id')
+    configuration_lines = fields.One2many('hr.default.leave.configuration.line','configuration_id')
 
 
     def change_stage(self):
@@ -140,11 +140,12 @@ class HrDefaultConfiguration(models.Model):
 
 
 
-    def condition_wise_auto_allocation(self):
+    def condition_wise_auto_allocation(self,employees=None):
         configurations = self.sudo().search([])
         for configuration in configurations:
             if not configuration.configurate_expiration_check():
                 continue
+            configuration.configuration_lines.auto_allocation(employees)
 
 
 
@@ -222,7 +223,6 @@ class HrDefaultConfigLine(models.Model):
 
 
     def _get_allocation_amount(self,local_dict):
-        employee = local_dict['employee']
         line = local_dict['line']
         if line.allocation_type == 'fixed':
             return line.allocation_duration
@@ -230,3 +230,30 @@ class HrDefaultConfigLine(models.Model):
             return line.allocation_condition_id.get_conditional_allocation(local_dict)
 
         return 0
+
+
+#     -----------------------------------------------------------------------------------------------------------------------------------------------
+#                                    Business Method
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+    def _get_applicable_employees(self):
+        self.ensure_one()
+        # add leave type related domain
+        pre_domain = self.leave_type_id.get_applicability_employee_domain()
+        if self.company_id:
+            pre_domain += [('company_id','in',self.company_id.ids)]
+        if self.department_id:
+            pre_domain.append(('department_id','in',self.department_id.ids))
+        employees = self.env['hr.employee'].sudo().search(pre_domain)
+        return employees
+
+
+
+
+    def auto_allocation(self,employees=None):
+        for line in self:
+            if not employees:
+                employees = self._get_applicable_employees()
+            for employee in employees:
+                pass
+

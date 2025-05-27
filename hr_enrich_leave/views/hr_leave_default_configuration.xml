@@ -27,7 +27,7 @@
                     </group>
                     <notebook>
                         <page name="allocation" string="Allocation">
-                            <field name="allocation_lines">
+                            <field name="configuration_lines">
                                 <list>
                                     <field name="leave_type_id"/>
                                     <field name="is_auto_renew" optional="show"/>
