@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from odoo import fields, models, api, _
 from dateutil.relativedelta import relativedelta
 
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tools.safe_eval import safe_eval, datetime, time
 
 
@@ -107,14 +107,44 @@ class HrDefaultConfiguration(models.Model):
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company.id,tracking=True)
     department_id = fields.Many2one('hr.department',tracking=True)
     name = fields.Char(tracking=True)
-    start_from = fields.Date(tracking=True)
+    start_from = fields.Date(tracking=True,required=1)
     end_date = fields.Date(tracking=True)
     state = fields.Selection([('draft', 'Draft'), ('waiting', 'Waiting'), ('running', 'Running'), ('expire', 'Expire')],
                              default='draft',tracking=True)
     configuration_lines = fields.One2many('hr.default.leave.configuration.line', 'configuration_id')
 
-    def change_stage(self):
-        pass
+    def _check_validation(self):
+        self.ensure_one()
+        domain = [('date_from','<=',self.start_from),'|',('date_to','=',False),('date_to','>=',self.end_date)]
+        domain += [('state', 'in', ['running']), ('id', 'not in', self.ids)]
+        if self.company_id:
+            domain += [('company_id','in',self.company_id.ids)]
+        if self.department_id:
+            domain += [('department_id','in',self.department_id.ids)]
+
+        count = self.search_count(domain)
+        if count >= 1 :
+            raise ValidationError('Not Allowed to do this operation !!')
+        return True
+
+
+    def btn_confirm(self):
+        current_date = fields.Date.context_today(self)
+        for config in self:
+            if config.state not in ('draft','waiting'):
+                continue
+            if current_date > config.start_from and config._check_validation():
+                config.state = 'running'
+
+    def btn_expire(self):
+        current_date = fields.Date.context_today(self)
+        for rec in self:
+            if rec.state not in ('running'):
+                continue
+            rec.state = 'expire'
+            rec.end_date = current_date - relativedelta(days=1)
+
+
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -132,11 +162,23 @@ class HrDefaultConfiguration(models.Model):
         return self.state == 'running'
 
     def condition_wise_auto_allocation(self, employees=None):
-        configurations = self.sudo().search([])
+        # for auto allocation to users
+        # we allocate two stage because first priority is for his own departmental allocation
+        # if don't have any department related allocation then get company related allocation
+        #
+        # departmental allocation
+        configurations = self.sudo().search([('department_id','!=',False)])
         for configuration in configurations:
             if not configuration.configurate_expiration_check():
                 continue
             configuration.configuration_lines.auto_allocation(employees)
+        # generic allocation
+        configurations = self.sudo().search([('department_id', '=', False)])
+        for configuration in configurations:
+            if not configuration.configurate_expiration_check():
+                continue
+            configuration.configuration_lines.auto_allocation(employees)
+
 
 
 class HrDefaultConfigLine(models.Model):
@@ -228,6 +270,7 @@ class HrDefaultConfigLine(models.Model):
             pre_domain.append(('department_id', 'in', self.department_id.ids))
         employees = self.env['hr.employee'].sudo().search(pre_domain)
         return employees
+
 
     def _get_interval_end(self,start_date):
         self.ensure_one()
