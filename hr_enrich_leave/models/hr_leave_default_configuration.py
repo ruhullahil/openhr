@@ -16,11 +16,12 @@ from odoo.tools.safe_eval import safe_eval, datetime, time
 
 class AllocationCondition(models.Model):
     _name = 'leave.condition'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Leave Condition'
 
     name = fields.Char()
-    condition_for = fields.Selection([('allocation', 'Allocation'), ('carry_over', 'Carry Over')])
-    condition_type = fields.Selection([('formula', 'Formula'), ('condition', 'Condition')])
+    condition_for = fields.Selection([('allocation', 'Allocation'), ('carry_over', 'Carry Over')],tracking=True)
+    condition_type = fields.Selection([('formula', 'Formula'), ('condition', 'Condition')],tracking=True)
     amount_python_compute = fields.Text(
         string="Python Code",
         default="""# Available variables:
@@ -32,7 +33,9 @@ class AllocationCondition(models.Model):
     # result = line.allocation_duration * (1/12 * line.remain_month)""",  # noqa: E501
     )
     application_condition = fields.Selection([('date', 'Date Range'), ('value', 'Value Range')],
-                                             help='This field use for applicability for date range ignore the year year will be ignored in calculation')
+                                             help='This field use for applicability for date range ignore the year year will be ignored in calculation',tracking=True)
+
+    condition_line_ids = fields.One2many('leave.condition.line','condition_id')
 
     def _execute_python_code(self, local_dict):
 
@@ -97,16 +100,17 @@ class LeaveConditionLine(models.Model):
 
 class HrDefaultConfiguration(models.Model):
     _name = 'hr.default.leave.configuration'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'HrDefaultConfiguration'
     _rec_name = 'name'
 
-    company_id = fields.Many2one('res.company', default=lambda self: self.env.company.id)
-    department_id = fields.Many2one('hr.department')
-    name = fields.Char()
-    start_from = fields.Date()
-    end_date = fields.Date()
+    company_id = fields.Many2one('res.company', default=lambda self: self.env.company.id,tracking=True)
+    department_id = fields.Many2one('hr.department',tracking=True)
+    name = fields.Char(tracking=True)
+    start_from = fields.Date(tracking=True)
+    end_date = fields.Date(tracking=True)
     state = fields.Selection([('draft', 'Draft'), ('waiting', 'Waiting'), ('running', 'Running'), ('expire', 'Expire')],
-                             default='draft')
+                             default='draft',tracking=True)
     configuration_lines = fields.One2many('hr.default.leave.configuration.line', 'configuration_id')
 
     def change_stage(self):
@@ -310,7 +314,7 @@ class HrDefaultConfigLine(models.Model):
             return True
         return False
 
-    def _genarate_local_dict(self,employee):
+    def _generate_local_dict(self,employee):
         self.ensure_one()
         local_dict ={
             'env':self.env,
@@ -329,7 +333,7 @@ class HrDefaultConfigLine(models.Model):
         self.ensure_one()
         start_date = self._get_start_date(employee)
         end_date = self._get_interval_end(start_date) if self.renew_cycle else None
-        local_dict = self._genarate_local_dict(employee)
+        local_dict = self._generate_local_dict(employee)
         allocation_count = self._get_allocation_amount(local_dict=local_dict)
         allocation_unit = 'number_of_days' if self.leave_type_id.request_unit != 'hour' else 'number_of_hours'
         data = {

@@ -83,6 +83,8 @@
                         </page>
                     </notebook>
                 </sheet>
+                <div class="o_attachment_preview"/>
+                <chatter open_attachments="True" reload_on_attachment="True"/>
             </form>
         </field>
     </record>

@@ -27,6 +27,7 @@ Long description of module's purpose
         'views/views.xml',
         'views/inherited_leave_type.xml',
         'views/hr_leave_default_configuration.xml',
+        'views/leave_condition.xml',
         'views/menu.xml',
         'views/templates.xml',
     ],

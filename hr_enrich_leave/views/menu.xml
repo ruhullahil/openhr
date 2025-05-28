@@ -2,4 +2,5 @@
 <odoo>
     <!-- This Menu Item must have a parent and an action -->
     <menuitem id="hr_leave_configuration_menu" name="Leave Configure" parent="hr_holidays.menu_hr_holidays_configuration" action="hr_leave_configuration_action" sequence="3"/>
+    <menuitem id="hr_leave_condition_menu" name="Leave Condition" parent="hr_holidays.menu_hr_holidays_configuration" action="leave_condition_action" sequence="5"/>
 </odoo>
