@@ -390,7 +390,7 @@ class HrDefaultConfigLine(models.Model):
         allocation_datas = list()
         for line in self:
             if not employees:
-                employees = self._get_applicable_employees()
+                employees = line._get_applicable_employees()
             for employee in employees:
                 if line.check_can_allocate_able(employee):
                     allocation_datas.append(line.prepare_employee_allocation(employee))
