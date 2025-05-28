@@ -52,7 +52,7 @@
                                             <field name="fiscal_year_id" invisible="not is_auto_renew or renew_base != 'fiscal'" required="renew_base == 'fiscal'"/>
                                             <field name="remain_month" invisible="not is_auto_renew"/>
                                         </group>
-                                        <group name="carry" string="Carry-Over Info">
+                                        <group name="carry" string="Carry-Over Info" invisible="not is_auto_renew">
                                             <field name="is_able_carry_over"/>
                                             <field name="carry_over_type" invisible="not is_able_carry_over" required="is_able_carry_over"/>
                                             <field name="max_carry_over_year" invisible="not is_able_carry_over" required="is_able_carry_over"/>

@@ -7,7 +7,7 @@ class FrozenAllocationInfo(models.Model):
 
     allocation_id = fields.Many2one('hr.leave.allocation')
     employee_id = fields.Many2one('hr.employee',related='allocation_id.employee_id')
-    start_date = fields.Date()
+    start_date = fields.Date(related='allocation_id.date_from')
     end_date = fields.Date()
     frozen_leave = fields.Float()
     carry_able_leave = fields.Float()

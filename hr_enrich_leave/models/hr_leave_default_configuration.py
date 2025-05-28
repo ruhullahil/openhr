@@ -379,15 +379,9 @@ class HrDefaultConfigLine(models.Model):
         local_dict = self._generate_local_dict(employee)
         allocation_count = self._get_allocation_amount(local_dict=local_dict)
         allocation_unit = 'number_of_days' if self.leave_type_id.request_unit != 'hour' else 'number_of_hours'
-        data = {
-            'employee_id':employee.id,
-            'date_from': start_date,
-            'date_to':end_date,
-            'config_id': self.configuration_id.id,
-            'config_line_id':self.id,
-            'holiday_status_id':self.leave_type_id.id,
-        }
-        data[allocation_unit]= allocation_count
+        data = {'employee_id': employee.id, 'date_from': start_date, 'date_to': end_date,
+                'config_id': self.configuration_id.id, 'config_line_id': self.id,
+                'holiday_status_id': self.leave_type_id.id, allocation_unit: allocation_count}
         return data
 
 
@@ -401,7 +395,7 @@ class HrDefaultConfigLine(models.Model):
                 if line.check_can_allocate_able(employee):
                     allocation_datas.append(line.prepare_employee_allocation(employee))
         allocations = self.env['hr.leave.allocation'].sudo().create(allocation_datas)
-        print(allocations)
+
 
 
 

@@ -6,6 +6,7 @@ class HrAllocation(models.Model):
 
     config_id = fields.Many2one('hr.default.leave.configuration')
     config_line_id = fields.Many2one('hr.default.leave.configuration.line')
+    is_carry_over_allocation = fields.Boolean(related='config_line_id.is_able_carry_over')
 
 
 
