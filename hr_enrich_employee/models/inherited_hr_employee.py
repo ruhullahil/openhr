@@ -27,6 +27,7 @@ class HrEmployee(models.Model):
     relation_with_em_contact = fields.Char()
     tin = fields.Char(string='TIN')
     identification_type = fields.Selection([('nid','NID'),('birth','Birth Certificate')])
+    manager_employee_id = fields.Char()
 
     # permanent Address
     permanent_street = fields.Char(string="Permanent Street", groups="base.group_user")
@@ -152,6 +153,12 @@ class HrEmployee(models.Model):
     def _inverse_contract_contract_type_id(self):
         for employee in self:
             employee.contract_id.contract_type_id = employee.contract_type_id
+
+    def add_manager_based_on_employee_id(self):
+        for rec in self:
+            manager = self.search([('barcode','=',rec.manager_employee_id)],limit=1)
+            if manager:
+                rec.parent_id = manager.id
 
 
 
