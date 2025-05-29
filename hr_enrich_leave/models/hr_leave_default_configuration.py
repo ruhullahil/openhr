@@ -45,23 +45,33 @@ class AllocationCondition(models.Model):
         except:
             raise UserError(
                 _(f'{self.amount_python_compute} not executable !!'))
-        # cxt = {
-        #     'object': self,
-        #     'env': self.env,
-        #
-        #     'date': date,
-        #     'datetime': datetime,
-        #     'timedelta': timedelta,
-        #     'time': time,
-        # }
-        # code = definition.compute_code.strip()
-        # safe_eval(code, cxt, mode="exec", nocopy=True)
+
+    def _get_condition_line_base_on_joining(self,joining_date_current_year):
+        for line in self.condition_line_ids:
+            start_date = line.from_date.replace(year=joining_date_current_year.year)
+            end_date = line.to_date.replace(year=joining_date_current_year.year)
+            if start_date <= joining_date_current_year and end_date >= joining_date_current_year:
+                return line
+        return self.env['leave.condition.line']
 
     def condition_allocation_execute(self, local_dict):
         self.ensure_one()
+        config_line = local_dict['line']
+        employee = local_dict['employee']
         if self.condition_type != 'condition':
             return 0
-        # TODO: have to add conditionatcondition_allocation_executeional method
+
+        if config_line.allocation_condition_based_in == 'joining':
+            current_date = fields.Date.context_today(self)
+            joining_date_current_year = employee.date_of_joining.replace(year=current_date.year)
+            condition_line = self._get_condition_line_base_on_joining(joining_date_current_year)
+            if not condition_line:
+                return 0
+            return condition_line.quantity
+        elif config_line.allocation_condition_based_in == 'present':
+            # TODO : Have to add present related functionality in attendance module
+            return  0
+
         return 0
 
     def _get_allocation_amount(self, local_dict):
@@ -69,6 +79,19 @@ class AllocationCondition(models.Model):
         employee = local_dict['employee']
         line = local_dict['line']
         if not self.condition_for or self.condition_for != 'allocation':
+            return 0
+        if self.condition_type == 'formula':
+            if 'result' not in local_dict:
+                local_dict['result'] = 0
+            return self._execute_python_code(local_dict)
+        return self.condition_allocation_execute(local_dict)
+
+
+    def _get_carry_over_amount(self, local_dict):
+        self.ensure_one()
+        employee = local_dict['employee']
+        line = local_dict['line']
+        if not self.condition_for or self.condition_for != 'carry_over':
             return 0
         if self.condition_type == 'formula':
             if 'result' not in local_dict:
@@ -223,6 +246,7 @@ class HrDefaultConfigLine(models.Model):
     carry_over_type = fields.Selection([('conditional', 'Conditional'), ('fixed', 'Fixed')])
     max_carry_over_year = fields.Float()
     max_carry_over = fields.Float(compute='_compute_max_carry_over', store=True, readonly=False)
+    carry_condition_based_in = fields.Selection([('joining','Joining'),('present','Present Day')])
     carry_over_condition_id = fields.Many2one('leave.condition', domain="[('condition_for','=','carry_over')]")
     is_able_use_carry_over = fields.Boolean()
     max_carry_over_use = fields.Float()
@@ -237,6 +261,7 @@ class HrDefaultConfigLine(models.Model):
 
     # Allocation related fields
     allocation_type = fields.Selection([('fixed', 'Fixed'), ('conditional', 'Conditional')])
+    allocation_condition_based_in = fields.Selection([('joining', 'Joining'), ('present', 'Present Day')])
     allocation_condition_id = fields.Many2one('leave.condition', domain="[('condition_for','=','allocation')]")
     allocation_duration = fields.Float()
     allocation_ids = fields.One2many('hr.leave.allocation', 'config_line_id')
@@ -278,10 +303,10 @@ class HrDefaultConfigLine(models.Model):
         if self.renew_cycle == 'daily':
             end_date = start_date + relativedelta(days=1)
         elif self.renew_cycle == 'weekly':
-            end_date = start_date + relativedelta(weeks=1)
+            end_date = start_date + relativedelta(weeks=1) - relativedelta(days=1)
         elif self.renew_cycle == 'monthly':
             end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
-        else:
+        elif self.renew_cycle == 'yearly':
             end_date = start_date + relativedelta(years=1) - relativedelta(days=1)
         return end_date
 
