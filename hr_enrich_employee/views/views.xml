@@ -13,18 +13,7 @@
       </field>
   </record>
 
-    <record id="inherit_employee_tree" model="ir.ui.view">
-        <field name="name">inherit.employee.tree</field>
-        <field name="model">hr.employee</field>
-        <field name="inherit_id" ref="hr.view_employee_tree"/>
-        <field name="arch" type="xml">
 
-            <xpath expr="//header" position="inside">
-                <button name="add_manager_based_on_employee_id" string="Add Manger" type="object" groups="hr.group_hr_user"/>
-            </xpath>
-
-        </field>
-    </record>
 
     <!-- Inherit Form View to Modify it -->
     <record id="inherit_department_form" model="ir.ui.view">
@@ -422,6 +411,20 @@
             </xpath>
 
 
+
+        </field>
+    </record>
+
+
+
+    <record id="inherit_employee_tree" model="ir.ui.view">
+        <field name="name">inherit.employee.tree</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="add_manager_based_on_employee_id" string="Add Manger" type="object" groups="hr.group_hr_user"/>
+            </xpath>
 
         </field>
     </record>
