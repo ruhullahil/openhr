@@ -40,6 +40,14 @@
         # Wizard
         "wizards/wizard_dms_file_move_views.xml",
         "wizards/wizard_dms_share_views.xml",
+    #     data
+        "demo/res_users.xml",
+        "demo/access_group.xml",
+        "demo/category.xml",
+        "demo/tag.xml",
+        "demo/storage.xml",
+        "demo/directory.xml",
+        # "demo/file.xml",
     ],
     "assets": {
         "web.assets_backend": [
