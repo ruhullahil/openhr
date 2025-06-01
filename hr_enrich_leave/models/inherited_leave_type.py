@@ -1,3 +1,5 @@
+from math import ceil, floor
+
 from odoo import fields, models, api, Command
 
 
@@ -61,8 +63,18 @@ class InheritHrLeaveType(models.Model):
         if self.is_gender_specific_leave:
             domain.append(('gender','=',self.apply_gender))
         if self.is_religion_specific_leave:
-            domain.append(('religion_id','=',self.apply_religion))
+            domain.append(('religion_id','=',self.apply_religion.id))
         return domain
+
+    def _get_value_after_rounding(self,value,round='ceil'):
+        self.ensure_one()
+
+        if self.rounding_type:
+            round = self.rounding_type
+        if round == 'ceil':
+            return ceil(value)
+        return floor(value)
+
 
 
 

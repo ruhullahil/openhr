@@ -182,7 +182,7 @@ class HrEmployeeBase(models.AbstractModel):
     religion_id = fields.Many2one('hr.religion')
     blood_group = fields.Selection(
         [('a_positive', 'A+'), ('a_neg', 'A-'), ('b_positive', 'B+'), ('b_neg', 'B-'), ('ab_positive', 'AB+'),
-         ('ab_neg', 'AB-')])
+         ('ab_neg', 'AB-'),('o+','O+'),('o-','O-')])
 
     @api.depends('department_id')
     def _compute_parent_id(self):

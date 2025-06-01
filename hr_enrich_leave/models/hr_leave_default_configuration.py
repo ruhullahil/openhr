@@ -40,7 +40,8 @@ class AllocationCondition(models.Model):
     def _execute_python_code(self, local_dict):
 
         try:
-            safe_eval(self.amount_python_compute, local_dict, mode="exec")
+            safe_eval(self.amount_python_compute, locals_dict=local_dict, mode="exec", nocopy=True)
+            # print('local dict',local_dict)
             return local_dict.get('result', 0)
         except:
             raise UserError(
@@ -138,7 +139,7 @@ class HrDefaultConfiguration(models.Model):
 
     def _check_validation(self):
         self.ensure_one()
-        domain = [('date_from','<=',self.start_from),'|',('date_to','=',False),('date_to','>=',self.end_date)]
+        domain = [('start_from','<=',self.start_from),'|',('end_date','=',False),('end_date','>=',self.end_date)]
         domain += [('state', 'in', ['running']), ('id', 'not in', self.ids)]
         if self.company_id:
             domain += [('company_id','in',self.company_id.ids)]
@@ -240,6 +241,7 @@ class HrDefaultConfigLine(models.Model):
             days = duration.days
             months += 1 if days > 15 else 0
             line.remain_month = 1 if date > end_day else months
+            print('remain month',line.remain_month)
 
     # carry over related fields
     is_able_carry_over = fields.Boolean()
@@ -271,7 +273,7 @@ class HrDefaultConfigLine(models.Model):
         if line.allocation_type == 'fixed':
             return line.allocation_duration
         elif line.allocation_type == 'conditional':
-            return line.allocation_condition_id.get_conditional_allocation(local_dict)
+            return line.allocation_condition_id._get_allocation_amount(local_dict)
 
         return 0
 
@@ -397,12 +399,14 @@ class HrDefaultConfigLine(models.Model):
         return local_dict
 
 
+
     def prepare_employee_allocation(self,employee):
         self.ensure_one()
         start_date = self._get_start_date(employee)
         end_date = self._get_interval_end(start_date) if self.renew_cycle else None
         local_dict = self._generate_local_dict(employee)
-        allocation_count = self._get_allocation_amount(local_dict=local_dict)
+        # location
+        allocation_count = self.leave_type_id._get_value_after_rounding(self._get_allocation_amount(local_dict=local_dict))
         allocation_unit = 'number_of_days' if self.leave_type_id.request_unit != 'hour' else 'number_of_hours'
         data = {'employee_id': employee.id, 'date_from': start_date, 'date_to': end_date,
                 'config_id': self.configuration_id.id, 'config_line_id': self.id,
@@ -413,8 +417,9 @@ class HrDefaultConfigLine(models.Model):
 
     def auto_allocation(self, employees=None):
         allocation_datas = list()
+        is_fixed_employee = True if employees else False
         for line in self:
-            if not employees:
+            if not is_fixed_employee:
                 employees = line._get_applicable_employees()
             for employee in employees:
                 if line.check_can_allocate_able(employee):

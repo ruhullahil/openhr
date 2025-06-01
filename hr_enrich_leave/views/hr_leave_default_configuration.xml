@@ -7,6 +7,8 @@
             <form string="hr_leave_default_configuration_form">
                 <header>
                     <button name="condition_wise_auto_allocation" string="Auto Allocation" class="oe_highlight" type="object"/>
+                    <button name="btn_confirm" string="Confirm" class="oe_highlight" type="object" invisible="state not in ('draft','waiting')"/>
+                    <button name="btn_expire" string="Expire" class="oe_highlight" type="object" invisible="state not in ('running')"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
