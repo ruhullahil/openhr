@@ -1,6 +1,8 @@
 from datetime import datetime, time
 from math import ceil
 
+from dateutil.relativedelta import relativedelta
+
 from odoo import fields, models, api
 from odoo.exceptions import ValidationError
 from odoo.tools.safe_eval import pytz
@@ -12,6 +14,40 @@ class HrLeave(models.Model):
     max_consecutive_period = fields.Integer(related='holiday_status_id.max_consecutive_period',store=True)
     info_message = fields.Html(compute='_compute_info_message')
     fiscal_year = fields.Many2one('account.fiscal.year',compute='_compute_fiscal_year',store=True)
+
+
+    # compensatory leave related fields
+    is_compensatory_leave = fields.Boolean(related='holiday_status_id.is_compensatory_leave')
+    compensatory_id = fields.Many2one('hr.compensatory.day')
+    compensatory_allowed_with_in_days = fields.Integer(related='holiday_status_id.allowed_with_in_days')
+    compensatory_restriction = fields.Selection(related='holiday_status_id.restriction')
+
+
+    @api.constrains('is_compensatory_leave','compensatory_id','state')
+    def check_compensatory_related_validation(self):
+        for rec in self:
+            today = fields.Date.context_today(self)
+            if not rec.is_compensatory_leave:
+                continue
+            if rec.leave_type_request_unit == 'hour':
+                raise ValidationError('Compensatory leave unit would be days !! please contact with Admin')
+            if rec.number_of_days > 1.0001 :
+                raise ValidationError('Compensatory day must be 1 day')
+            if rec.compensatory_id and rec.compensatory_allowed_with_in_days > 0.0001:
+                compensatory_date =  rec.compensatory_id.date
+                max_date = compensatory_date + relativedelta(days=rec.compensatory_allowed_with_in_days)
+                if rec.restriction == 'must' and max_date < today:
+                    raise ValidationError('It is not possible to apply from you !! please contact with Admin')
+                if rec.restriction == 'warning' and max_date < today:
+                    rec.info_message = """<p class="text-danger"> you allowed compensatory date exited !!</p>"""
+
+
+
+
+
+
+
+
 
     @api.depends('employee_id', 'holiday_status_id', 'date_from', 'date_to')
     def _compute_fiscal_year(self):
@@ -71,8 +107,8 @@ class HrLeave(models.Model):
 
 
 
-    def chek_durational_validation(self):
-        self._get_consecutive_number_of_time()
+    # def chek_durational_validation(self):
+    #     self._get_consecutive_number_of_time()
 
 
 

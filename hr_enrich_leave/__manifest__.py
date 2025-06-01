@@ -28,6 +28,7 @@ Long description of module's purpose
         'views/inherited_leave_type.xml',
         'views/hr_leave_default_configuration.xml',
         'views/leave_condition.xml',
+        'views/compensatory_day.xml',
         'views/menu.xml',
         'views/templates.xml',
     ],

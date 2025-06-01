@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
 
         <record id="default_leave_config_sequence" model="ir.sequence">
             <field name="name">Default leave Config</field>
             <field name="code">default.leave.con.seq</field>
             <field name="prefix">DL</field>
+            <field name="padding">2</field>
+        </record>
+
+        <record id="hr_compensatory_day_sequence" model="ir.sequence">
+            <field name="name">HR : Compensatory Day</field>
+            <field name="code">hr.compensatory.seq</field>
+            <field name="prefix">CD</field>
             <field name="padding">2</field>
         </record>
 

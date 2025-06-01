@@ -6,3 +6,5 @@ from . import inherited_leave_type
 from . import inherited_hr_leave
 from . import inherited_hr_alocation
 from . import hr_leave_default_configuration
+from . import compensatory_day_application
+from . import frozen_allocation_info
