@@ -12,6 +12,8 @@ class InheritHrLeaveType(models.Model):
     auto_alter_max_consecutive_exit = fields.Boolean(string='Automatic change Leave Application')
     alter_sequence = fields.One2many('hr.alter.leave.sequence','parent_leave_type')
     is_auto_merge = fields.Boolean(string='Auto Marge')
+    # document related fields
+    is_document_required = fields.Boolean(string='Required Document')
 
 
 

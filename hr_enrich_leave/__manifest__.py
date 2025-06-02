@@ -29,6 +29,7 @@ Long description of module's purpose
         'views/hr_leave_default_configuration.xml',
         'views/leave_condition.xml',
         'views/compensatory_day.xml',
+        'views/inherit_leave.xml',
         'views/menu.xml',
         'views/templates.xml',
     ],
@@ -36,5 +37,13 @@ Long description of module's purpose
     'demo': [
         'demo/demo.xml',
     ],
+    'assets': {
+            'web.assets_backend': [
+                'hr_enrich_leave/static/src/dashboard/inherit_time_off_dashboard.xml'
+                # Don't include dark mode files in light mode
+
+            ],
+    }
+
 }
 

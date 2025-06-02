@@ -15,6 +15,31 @@ class HrLeave(models.Model):
     info_message = fields.Html(compute='_compute_info_message')
     fiscal_year = fields.Many2one('account.fiscal.year',compute='_compute_fiscal_year',store=True)
 
+    # support document mandatory fields and functions
+
+    is_document_required = fields.Boolean(related='holiday_status_id.is_document_required')
+
+    @api.constrains('is_document_required','state')
+    def document_required_constrains(self):
+        for rec in self:
+            if not rec.is_document_required or rec.state not in ('confirm','validate1'):
+                continue
+            if not rec.supported_attachment_ids:
+                raise ValidationError('For this leave type you need document')
+
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
 
     # compensatory leave related fields
     is_compensatory_leave = fields.Boolean(related='holiday_status_id.is_compensatory_leave')
@@ -86,7 +111,7 @@ class HrLeave(models.Model):
         # # time_zone = self.employee_id.tz
         # ut_time = pytz.timezone(pytz.UTC)
         contract_start = self.date_from.astimezone(pytz.UTC)
-        # check privious day leave
+        # check previous day leave
         last_work_day = self.employee_id._get_previous_working_daya(contract_start)
         leave = self.employee_id.get_leave_id(last_work_day)
         if leave and leave.holiday_status_id.id == self.holiday_status_id.id and self.holiday_status_id.is_auto_merge:
@@ -107,15 +132,6 @@ class HrLeave(models.Model):
 
 
 
-    # def chek_durational_validation(self):
-    #     self._get_consecutive_number_of_time()
-
-
-
-
-
-
-
     @api.constrains('max_consecutive_period','leave_type_request_unit','state')
     def _check_max_consecutive_period_validation(self):
         for rec in self:
@@ -131,7 +147,7 @@ class HrLeave(models.Model):
             elif rec.leave_type_request_unit == 'hour' and rec.max_consecutive_period < number_max_consecutive_period:
                 raise ValidationError('You can not do this application !! because you exited max consecutive time !! ')
 
-#             Add cretical validation
+
 
 
 

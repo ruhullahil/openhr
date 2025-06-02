@@ -9,6 +9,7 @@
 
             <xpath expr="//group[@name='configuration']" position="inside">
                 <field name="is_check_auto_clear" invisible="1"/>
+
                 <field name="rounding_type"/>
                 <field name="max_consecutive_period"/>
                 <field name="department_id"/>
@@ -29,6 +30,9 @@
                     </list>
                 </field>
 
+            </xpath>
+            <xpath expr="//field[@name='support_document']" position="after">
+                <field name="is_document_required" invisible="not support_document"/>
             </xpath>
 
         </field>
