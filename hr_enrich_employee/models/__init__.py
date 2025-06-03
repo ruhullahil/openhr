@@ -10,5 +10,6 @@ from . import hr_district
 from . import chronic_disease
 from . import dependent_relation
 from . import hr_disease_info
+from . import emergency_contact
 from . import inherited_hr_employee
 

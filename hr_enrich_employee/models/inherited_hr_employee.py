@@ -10,7 +10,7 @@ class HrEmployee(models.Model):
     _inherit = ['hr.employee','utm.mixin']
     _description = 'Hr Employee'
 
-
+    # basic info
     date_of_joining = fields.Date()
     salary = fields.Monetary(compute='_compute_contract_salary',inverse='_inverse_contract_salary',currency_field='currency_id')
     contract_type_id = fields.Many2one('hr.contract.type',compute='_compute_contract_type_id',inverse='_inverse_contract_contract_type_id')
@@ -28,6 +28,9 @@ class HrEmployee(models.Model):
     tin = fields.Char(string='TIN')
     identification_type = fields.Selection([('nid','NID'),('birth','Birth Certificate')])
     manager_employee_id = fields.Char()
+    # extra emergency contact
+    is_more_emergency = fields.Boolean()
+    emergency_contact_ids = fields.One2many('emergency.contact.line','employee_id')
 
     # permanent Address
     permanent_street = fields.Char(string="Permanent Street", groups="base.group_user")
@@ -47,7 +50,6 @@ class HrEmployee(models.Model):
     passport_issue_date = fields.Date()
     passport_expire_date = fields.Date()
     marriage_date = fields.Date()
-
     spouse_occupation = fields.Char()
 
     # helth info

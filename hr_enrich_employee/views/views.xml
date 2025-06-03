@@ -147,6 +147,19 @@
                 <xpath expr="//field[@name='emergency_contact']" position="after">
                     <field name="relation_with_em_contact" string="Relation"/>
                 </xpath>
+
+                <xpath expr="//field[@name='emergency_phone']" position="after">
+                    <field name="is_more_emergency" string="More Emergency"/>
+                    <field name="emergency_contact_ids" invisible="not is_more_emergency" string="More Contact">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name" required="1"/>
+                            <field name="relation" required="1"/>
+                            <field name="phone" required="1"/>
+                            <field name="address" optional="hide"/>
+                        </list>
+                    </field>
+                </xpath>
                 <xpath expr="//field[@name='identification_id']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
@@ -207,7 +220,7 @@
                             </field>
                         </group>
                     </page>
-                    <page name="extera_info" string="Extera Info">
+                    <page name="extera_info" string="Extra Info">
                         <group>
                             <group>
                                 <field name="is_show_shirt_size" invisible="1"/>
