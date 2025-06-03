@@ -35,9 +35,11 @@ class InheritHrLeaveType(models.Model):
     restriction = fields.Selection([('must','Must Follow'),('warning','Warning')],default='warning')
 
 #     leave for extera validity
-    is_need_extera_validation = fields.Boolean()
-    appy_in_fiscal_year = fields.Float()
-    apply_in_life_time = fields.Float()
+    is_need_extra_validation = fields.Boolean(string='Extra Validation')
+    max_apply_in_allocation = fields.Float(string='Max Apply In Year')
+    max_apply_in_life_time = fields.Float(string='Max Apply In Life Time')
+    minimum_apply_interval = fields.Float(string='Minimum Apply Interval')
+    minimum_apply_interval_type = fields.Selection([('day', 'Day'), ('month', 'Month'), ('year', 'Year')])
 
 #     auto clear field
     is_check_auto_clear = fields.Boolean(compute='_compute_auto_clear_data',store=True)

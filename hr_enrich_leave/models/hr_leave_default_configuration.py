@@ -415,6 +415,8 @@ class HrDefaultConfigLine(models.Model):
 
 
 
+
+
     def auto_allocation(self, employees=None):
         allocation_datas = list()
         is_fixed_employee = True if employees else False
@@ -425,6 +427,14 @@ class HrDefaultConfigLine(models.Model):
                 if line.check_can_allocate_able(employee):
                     allocation_datas.append(line.prepare_employee_allocation(employee))
         allocations = self.env['hr.leave.allocation'].sudo().create(allocation_datas)
+
+        carry_allocation = allocations.filtered(lambda l:l.is_carry_over_allocation)
+        for allocation in carry_allocation:
+            pass
+
+
+
+
 
 
 

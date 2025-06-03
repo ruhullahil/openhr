@@ -47,7 +47,7 @@
                                             <field name="department_id" readonly="1" force_save="1" options="{'no_open': True, 'no_create': True}"/>
                                         </group>
                                         <group name="renew" string="Renew Info">
-                                            <field name="is_auto_renew"/>
+                                            <field name="is_auto_renew" string="Auto Renew"/>
                                             <field name="renew_cycle" invisible="not is_auto_renew" required="is_auto_renew"/>
                                             <field name="renew_base" invisible="not is_auto_renew" required="is_auto_renew"/>
                                             <field name="renew_day" invisible="not is_auto_renew or renew_base != 'fixed'" required="renew_base == 'fixed'"/>
