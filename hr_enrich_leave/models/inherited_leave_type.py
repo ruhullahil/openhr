@@ -38,7 +38,7 @@ class InheritHrLeaveType(models.Model):
     is_need_extra_validation = fields.Boolean(string='Extra Validation')
     max_apply_in_year = fields.Float(string='Max Apply In Calender Year')
     max_apply_in_life_time = fields.Float(string='Max Apply In Life Time')
-    minimum_apply_interval = fields.Float(string='Minimum Apply Interval')
+    minimum_apply_interval = fields.Integer(string='Minimum Apply Interval')
     minimum_apply_interval_type = fields.Selection([('day', 'Day'), ('month', 'Month'), ('year', 'Year')])
 
 #     auto clear field

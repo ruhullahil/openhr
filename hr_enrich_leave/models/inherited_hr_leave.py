@@ -11,14 +11,14 @@ from odoo.tools.safe_eval import pytz
 class HrLeave(models.Model):
     _inherit = 'hr.leave'
 
-    max_consecutive_period = fields.Integer(related='holiday_status_id.max_consecutive_period',store=True)
+    max_consecutive_period = fields.Integer(related='holiday_status_id.max_consecutive_period', store=True)
     info_message = fields.Html(compute='_compute_info_message')
-    fiscal_year = fields.Many2one('account.fiscal.year',compute='_compute_fiscal_year',store=True)
+    fiscal_year = fields.Many2one('account.fiscal.year', compute='_compute_fiscal_year', store=True)
 
     # support document mandatory fields and functions
 
     is_document_required = fields.Boolean(related='holiday_status_id.is_document_required')
-
+    #
     # def document_required_constrains(self):
     #     for rec in self:
     #         if not rec.is_document_required or rec.state not in ('confirm','validate1'):
@@ -26,19 +26,7 @@ class HrLeave(models.Model):
     #         if not rec.supported_attachment_ids:
     #             raise ValidationError('For this leave type you need document')
 
-
-
     # ----------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
 
     # compensatory leave related fields
     is_compensatory_leave = fields.Boolean(related='holiday_status_id.is_compensatory_leave')
@@ -46,8 +34,7 @@ class HrLeave(models.Model):
     compensatory_allowed_with_in_days = fields.Integer(related='holiday_status_id.allowed_with_in_days')
     compensatory_restriction = fields.Selection(related='holiday_status_id.restriction')
 
-
-    @api.constrains('is_compensatory_leave','compensatory_id','state')
+    @api.constrains('is_compensatory_leave', 'compensatory_id', 'state')
     def check_compensatory_related_validation(self):
         for rec in self:
             today = fields.Date.context_today(self)
@@ -55,23 +42,15 @@ class HrLeave(models.Model):
                 continue
             if rec.leave_type_request_unit == 'hour':
                 raise ValidationError('Compensatory leave unit would be days !! please contact with Admin')
-            if rec.number_of_days > 1.0001 :
+            if rec.number_of_days > 1.0001:
                 raise ValidationError('Compensatory day must be 1 day')
             if rec.compensatory_id and rec.compensatory_allowed_with_in_days > 0.0001:
-                compensatory_date =  rec.compensatory_id.date
+                compensatory_date = rec.compensatory_id.date
                 max_date = compensatory_date + relativedelta(days=rec.compensatory_allowed_with_in_days)
                 if rec.restriction == 'must' and max_date < today:
                     raise ValidationError('It is not possible to apply from you !! please contact with Admin')
                 if rec.restriction == 'warning' and max_date < today:
                     rec.info_message = """<p class="text-danger"> you allowed compensatory date exited !!</p>"""
-
-
-
-
-
-
-
-
 
     @api.depends('employee_id', 'holiday_status_id', 'date_from', 'date_to')
     def _compute_fiscal_year(self):
@@ -82,10 +61,7 @@ class HrLeave(models.Model):
             )
             leave.fiscal_year = fiscalyear or None
 
-
-
-
-    @api.depends('employee_id','holiday_status_id','date_from','date_to')
+    @api.depends('employee_id', 'holiday_status_id', 'date_from', 'date_to')
     def _compute_info_message(self):
         for leave in self:
             leave.info_message = ''
@@ -98,10 +74,10 @@ class HrLeave(models.Model):
                 continue
             duration = leave.date_to - leave.date_from
             days = ceil(duration.total_seconds() / (24 * 3600))
-            hours = ceil(duration.total_seconds()/3600)
+            hours = ceil(duration.total_seconds() / 3600)
             result[leave.id] = (days, hours)
         if not result:
-            return super(HrLeave,self)._get_durations(check_leave_type,resource_calendar)
+            return super(HrLeave, self)._get_durations(check_leave_type, resource_calendar)
         return result
 
     def _get_consecutive_number_of_time(self):
@@ -114,8 +90,9 @@ class HrLeave(models.Model):
         last_work_day = self.employee_id._get_previous_working_daya(contract_start)
         leave = self.employee_id.get_leave_id(last_work_day)
         if leave and leave.holiday_status_id.id == self.holiday_status_id.id and self.holiday_status_id.is_auto_merge:
-            duration  = self.date_to - leave.date_from
-            con_time = ceil(duration.total_seconds() / (24 * 3600)) if self.leave_type_request_unit != 'hour' else ceil(duration.total_seconds()/3600)
+            duration = self.date_to - leave.date_from
+            con_time = ceil(duration.total_seconds() / (24 * 3600)) if self.leave_type_request_unit != 'hour' else ceil(
+                duration.total_seconds() / 3600)
             return con_time
         # next day leave check
         next_work_day = self.employee_id.get_next_work_days(contract_start)
@@ -127,14 +104,10 @@ class HrLeave(models.Model):
             return con_time
         return self.number_of_days if self.leave_type_request_unit != 'hour' else self.number_of_hours
 
-
-
-
-
-    @api.constrains('max_consecutive_period','leave_type_request_unit','state')
+    @api.constrains('max_consecutive_period', 'leave_type_request_unit', 'state')
     def _check_max_consecutive_period_validation(self):
         for rec in self:
-            if rec.state in ('refuse','cancel'):
+            if rec.state in ('refuse', 'cancel'):
                 continue
             if rec.max_consecutive_period <= 0:
                 continue
@@ -146,28 +119,28 @@ class HrLeave(models.Model):
             elif rec.leave_type_request_unit == 'hour' and rec.max_consecutive_period < number_max_consecutive_period:
                 raise ValidationError('You can not do this application !! because you exited max consecutive time !! ')
 
-
-
-#     -------------------------------------------------------------------------------------------------------------------------------------
-#                           Extra validation
-# -----------------------------------------------------------------------------------------------------------------------------------------
+    #     -------------------------------------------------------------------------------------------------------------------------------------
+    #                           Extra validation
+    # -----------------------------------------------------------------------------------------------------------------------------------------
 
     is_need_extra_validation = fields.Boolean(related='holiday_status_id.is_need_extra_validation')
 
     def _check_max_apply_in_year(self):
         self.ensure_one()
-        max_apply_year = self.holiday_status_id.max_apply_in_year  or 0.0
+        max_apply_year = self.holiday_status_id.max_apply_in_year or 0.0
         if not (max_apply_year > 0.001):
             return
         current_date = fields.Date.context_today(self)
-        start_date = current_date.replace(day=1,month=1)
-        end_date = current_date.replace(day=31,month=12)
-        domain = [('company_id','=',self.company_id.id),('employee_id','=',self.employee_id.id),('state','not in',('cancel','refuse'))]
-        date_related_domain = [('date_to','>=',start_date),('date_to','<=',end_date)]
+        start_date = current_date.replace(day=1, month=1)
+        end_date = current_date.replace(day=31, month=12)
+        domain = [('company_id', '=', self.company_id.id), ('employee_id', '=', self.employee_id.id),
+                  ('state', 'not in', ('cancel', 'refuse')), ('holiday_status_id', '=', self.holiday_status_id.id)]
+        date_related_domain = [('date_to', '>=', start_date), ('date_to', '<=', end_date)]
         domain += date_related_domain
         appy_count = self.sudo().search_count(domain)
         if appy_count > max_apply_year:
-            raise ValidationError(f'You can not appy {self.holiday_status_id.display_name} !! Your limit is over for this year.')
+            raise ValidationError(
+                f'You can not appy {self.holiday_status_id.display_name} !! Your limit is over for this year.')
 
     def _check_max_in_life_time(self):
         self.ensure_one()
@@ -175,17 +148,40 @@ class HrLeave(models.Model):
         if not (max_life_time > 0.001):
             return
         domain = [('company_id', '=', self.company_id.id), ('employee_id', '=', self.employee_id.id),
-                  ('state', 'not in', ('cancel', 'refuse'))]
+                  ('state', 'not in', ('cancel', 'refuse')), ('holiday_status_id', '=', self.holiday_status_id.id)]
         appy_count = self.sudo().search_count(domain)
         if appy_count > max_life_time:
             raise ValidationError(
                 f'You can not appy {self.holiday_status_id.display_name} !! Your limit is over for this leave type.')
 
+    def _check_minimum_applied_interval(self):
+        self.ensure_one()
+        minimum_interval = self.holiday_status_id.minimum_apply_interval or 0.0
+        minimum_interval_type = self.holiday_status_id.minimum_apply_interval_type or 'day'
+        if not (minimum_interval > 0.0):
+            return
+
+        domain = [('company_id', '=', self.company_id.id), ('employee_id', '=', self.employee_id.id),
+                  ('state', 'not in', ('cancel', 'refuse')), ('holiday_status_id', '=', self.holiday_status_id.id)]
+        last_application = self.sudo().search(domain,order='date_to desc',limit=1)
+        if not last_application:
+            return
+
+        last_application_to_date = last_application.date_to
+        apply_datetime = self.date_from or datetime.now(pytz.timezone(self._context.get('tz') or 'UTC'))
+        if minimum_interval_type == 'day':
+            duration = relativedelta(days=minimum_interval)
+        elif minimum_interval_type == 'month':
+            duration = relativedelta(months=minimum_interval)
+        else:
+            duration = relativedelta(years=minimum_interval)
+
+        not_applicable_last_date = last_application_to_date  + duration
+        if apply_datetime < not_applicable_last_date:
+            raise ValidationError(f'You are not allow to do {self.holiday_status_id.display_name}.')
 
 
-
-
-
+    @api.constrains('is_need_extra_validation', 'state')
     def check_extra_validation(self):
         for rec in self:
             if not rec.is_need_extra_validation:
@@ -194,9 +190,9 @@ class HrLeave(models.Model):
             rec._check_max_apply_in_year()
             # life time max check
             rec._check_max_in_life_time()
+            # minimum interval application
+            rec._check_minimum_applied_interval()
 
-
-
-
-
-
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#                           Approval layer related works
+# --------------------------------------------------------------------------------------------------------------------------------

@@ -37,7 +37,7 @@
             <xpath expr="//group[@name='configuration']" position="after">
                 <group name="extra" string="Extra">
                     <field name="is_need_extra_validation"/>
-                    <field name="max_apply_in_allocation" invisible="not is_need_extra_validation"/>
+                    <field name="max_apply_in_year" invisible="not is_need_extra_validation"/>
                     <field name="max_apply_in_life_time" invisible="not is_need_extra_validation"/>
                     <field name="minimum_apply_interval" invisible="not is_need_extra_validation"/>
                     <field name="minimum_apply_interval_type" invisible="not is_need_extra_validation or not minimum_apply_interval" required="minimum_apply_interval"/>
