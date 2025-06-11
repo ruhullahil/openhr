@@ -9,6 +9,26 @@ from odoo import _, api, fields, models
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
 
+    hr_manager_id = fields.Many2one('hr.employee',domain=lambda self: [('user_id.groups_id', 'in', self.env.ref('hr_holidays.group_hr_holidays_user').id),('user_id.company_ids', 'in', self.env.company.id)])
+
+
+
+    def get_handover_employee(self):
+        self.ensure_one()
+
+        holidays = self.env['hr.leave'].sudo().search([
+            ('employee_id', 'in', self.ids),
+            ('date_from', '<=', fields.Datetime.now()),
+            ('date_to', '>=', fields.Datetime.now()),
+            ('state', '=', 'validate'),
+        ])
+        if not holidays:
+            return self
+        return holidays.hanover_employee or self
+
+
+
+
 
 
     def _get_consumed_leaves(self, leave_types, target_date=False, ignore_future=False):

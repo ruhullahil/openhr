@@ -103,10 +103,6 @@ class HrEmployee(models.Model):
         print(data)
         return data
 
-
-
-
-
     def _make_order_list_html(self,name,index):
         return f'<li class="list-group-item px-{index*2}" style="border:none"> <div name = "state" class ="o_field_widget o_readonly_modifier o_field_badge text-success"><span class ="badge rounded-pill text-bg-success">{name} </span > </div></li>'
 
@@ -127,6 +123,7 @@ class HrEmployee(models.Model):
     def _compute_age(self):
         for rec in self:
             rec.age = rec._get_age() or 0
+
 
     @api.depends('date_of_joining')
     def _compute_employment_year(self):
@@ -190,6 +187,17 @@ class HrEmployeeBase(models.AbstractModel):
     def _compute_parent_id(self):
         for employee in self:
             employee.parent_id = None
+
+    @api.depends('parent_id','department_id')
+    def _compute_coach(self):
+        for employee in self:
+            employee.coach_id = employee.department_id.manager_id.id or None
+            # manager = employee.parent_id
+            # previous_manager = employee._origin.parent_id
+            # if manager and (employee.coach_id == previous_manager or not employee.coach_id):
+            #     employee.coach_id = manager
+            # elif not employee.coach_id:
+            #     employee.coach_id = False
 
 HR_WRITABLE_FIELDS = [
         'blood_group',

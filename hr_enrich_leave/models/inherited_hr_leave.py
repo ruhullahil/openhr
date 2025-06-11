@@ -196,3 +196,27 @@ class HrLeave(models.Model):
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #                           Approval layer related works
 # --------------------------------------------------------------------------------------------------------------------------------
+#     Handover related info
+    is_require_hand_over = fields.Boolean(related='holiday_status_id.is_require_hand_over')
+    hanover_employee = fields.Many2one('hr.employee')
+
+
+
+    state = fields.Selection(selection_add=[('validate2', 'Third Approval'),('validate',)], ondelete={'validate2': 'cascade'})
+    alternative_manager_id = fields.Many2one('hr.employee',compute='_compute_approval_related_employees')
+    hod_id = fields.Many2one('hr.employee',compute='_compute_approval_related_employees')
+    alternative_hod_id = fields.Many2one('hr.employee',compute='_compute_approval_related_employees')
+    hr_manager_id = fields.Many2one('hr.employee',compute='_compute_approval_related_employees')
+    alternative_hr_manager_id = fields.Many2one('hr.employee',compute='_compute_approval_related_employees')
+
+
+    @api.depends('employee_id')
+    def _compute_approval_related_employees(self):
+        for rec in self:
+            rec.alternative_manager_id = rec.employee_id.parent_id.get_handover_employee() if rec.employee_id.parent_id else None
+            rec.hod_id = rec.employee_id.coach_id or None
+            rec.alternative_hod_id = rec.employee_id.coach_id.get_handover_employee() if rec.employee_id.coach_id else None
+            rec.hr_manager_id = rec.employee_id.hr_manager_id or None
+            rec.alternative_hr_manager_id = rec.employee_id.hr_manager_id.get_handover_employee() if rec.employee_id.hr_manager_id else None
+
+

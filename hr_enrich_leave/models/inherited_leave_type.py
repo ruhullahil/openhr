@@ -14,6 +14,7 @@ class InheritHrLeaveType(models.Model):
     is_auto_merge = fields.Boolean(string='Auto Marge')
     # document related fields
     is_document_required = fields.Boolean(string='Required Document')
+    is_require_hand_over = fields.Boolean(string='Require Handover')
 
 
 
@@ -40,6 +41,8 @@ class InheritHrLeaveType(models.Model):
     max_apply_in_life_time = fields.Float(string='Max Apply In Life Time')
     minimum_apply_interval = fields.Integer(string='Minimum Apply Interval')
     minimum_apply_interval_type = fields.Selection([('day', 'Day'), ('month', 'Month'), ('year', 'Year')])
+
+    leave_validation_type = fields.Selection(selection_add=[('manager_hod', 'Manager And HOD'),('manger_hod_hr','Manager, HOD and HR')], ondelete={'manager_hod': 'cascade','manger_hod_hr':'cascade'})
 
 #     auto clear field
     is_check_auto_clear = fields.Boolean(compute='_compute_auto_clear_data',store=True)
