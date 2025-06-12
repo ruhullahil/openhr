@@ -21,7 +21,7 @@
                 <field name="allowed_with_in_days" invisible="not is_compensatory_leave" required="is_compensatory_leave"/>
                 <field name="restriction" invisible="not is_compensatory_leave" required="is_compensatory_leave"/>
                 <field name="is_auto_merge"/>
-                <field name="auto_alter_max_consecutive_exit" invisible="not is_auto_merge" required="is_auto_merge"/>
+                <field name="auto_alter_max_consecutive_exit" invisible="1" required="is_auto_merge"/>
                 <field name="alter_sequence" invisible="not auto_alter_max_consecutive_exit" required="auto_alter_max_consecutive_exit">
                     <list create="1" editable="bottom">
                         <field name="sequence" widget='handle'/>

@@ -15,4 +15,16 @@ class HrAllocation(models.Model):
             return FrozenInfo
         frozen_infos = FrozenInfo.sudo().search(
             [('employee_id', '=', self.employee_id.id), ('leave_type_id', 'in', self.holiday_status_id.ids),
-             ('employee_company_id', '=', self.employee_company_id.id)],order='')
+             ('employee_company_id', '=', self.employee_company_id.id),('end_date','<=',self.date_from)],order='id desc')
+
+
+    def get_previous_allocation(self):
+        self.ensure_one()
+        domain = [('state','=','validate'),('date_to','<=',self.date_from),('employee_id','=',self.employee_id.id),('holiday_status_id','=',self.holiday_status_id.id)]
+        last_allocation = self.sudo().search(domain,order=' date_to  desc',limit=1)
+        return last_allocation
+
+
+
+
+
