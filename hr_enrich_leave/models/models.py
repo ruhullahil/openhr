@@ -237,6 +237,16 @@ class HrEmployee(models.Model):
     def _get_consumed_leaves(self, leave_types, target_date=False, ignore_future=False):
         allocations_leaves_consumed,to_recheck_leaves_per_leave_type = super(HrEmployee,self)._get_consumed_leaves(leave_types,target_date,ignore_future)
         # we have to modify our balance based on our own condition
+        for employee,leave_type in allocations_leaves_consumed.items():
+            for leave_type,allocation in leave_type.items():
+                for allocation,data in allocation.items():
+                    if not allocation.is_carry_over_allocation:
+                        continue
+                    frozen_data = allocation._get_previous_frozen_data()
+                    data['frozen_leave'] = frozen_data.get('frozen_count',0.0)
+                    data['usa_able_frozen_leave'] = frozen_data.get('use_able_frozen',0.0)
+                    data['max_leaves'] += frozen_data.get('use_able_frozen',0.0)
+
 
 
 
