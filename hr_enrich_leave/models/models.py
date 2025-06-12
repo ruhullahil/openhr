@@ -9,7 +9,7 @@ from odoo import _, api, fields, models
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
 
-    hr_manager_id = fields.Many2one('hr.employee',domain=lambda self: [('user_id.groups_id', 'in', self.env.ref('hr_holidays.group_hr_holidays_user').id),('user_id.company_ids', 'in', self.env.company.id)])
+    hr_manager_id = fields.Many2one('res.users',domain=lambda self: [('groups_id', 'in', self.env.ref('hr_holidays.group_hr_holidays_user').id),('company_ids', 'in', self.env.company.id)])
 
 
 

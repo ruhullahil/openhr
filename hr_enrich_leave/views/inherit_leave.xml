@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='supported_attachment_ids']" position="before">
                 <field name="is_document_required" invisible="1"/>
+                <field name="can_validate" invisible="1"/>
             </xpath>
 
             <xpath expr="//field[@name='supported_attachment_ids']" position="attributes">
@@ -26,6 +27,15 @@
                     <span>Some thing went wrong please check bellow message</span>
                     (<field name="info_message"/>).
                 </div>
+            </xpath>
+            <xpath expr="//button[@name='action_approve']" position="attributes">
+                <attribute name="invisible">not can_approve or state not in ('confirm','validate1')</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_refuse']" position="attributes">
+                <attribute name="invisible">not can_approve and not can_validate</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_validate']" position="attributes">
+                <attribute name="invisible">not can_validate</attribute>
             </xpath>
 
         </field>

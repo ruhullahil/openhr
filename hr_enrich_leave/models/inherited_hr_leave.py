@@ -3,8 +3,8 @@ from math import ceil
 
 from dateutil.relativedelta import relativedelta
 
-from odoo import fields, models, api
-from odoo.exceptions import ValidationError
+from odoo import fields, models, api, _
+from odoo.exceptions import ValidationError, UserError, AccessError
 from odoo.tools.safe_eval import pytz
 
 
@@ -163,7 +163,7 @@ class HrLeave(models.Model):
 
         domain = [('company_id', '=', self.company_id.id), ('employee_id', '=', self.employee_id.id),
                   ('state', 'not in', ('cancel', 'refuse')), ('holiday_status_id', '=', self.holiday_status_id.id)]
-        last_application = self.sudo().search(domain,order='date_to desc',limit=1)
+        last_application = self.sudo().search(domain, order='date_to desc', limit=1)
         if not last_application:
             return
 
@@ -176,10 +176,9 @@ class HrLeave(models.Model):
         else:
             duration = relativedelta(years=minimum_interval)
 
-        not_applicable_last_date = last_application_to_date  + duration
+        not_applicable_last_date = last_application_to_date + duration
         if apply_datetime < not_applicable_last_date:
             raise ValidationError(f'You are not allow to do {self.holiday_status_id.display_name}.')
-
 
     @api.constrains('is_need_extra_validation', 'state')
     def check_extra_validation(self):
@@ -193,21 +192,35 @@ class HrLeave(models.Model):
             # minimum interval application
             rec._check_minimum_applied_interval()
 
-# -------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#                           Approval layer related works
-# --------------------------------------------------------------------------------------------------------------------------------
-#     Handover related info
+    # -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #                           Approval layer related works
+    # --------------------------------------------------------------------------------------------------------------------------------
+    #     Handover related info
     is_require_hand_over = fields.Boolean(related='holiday_status_id.is_require_hand_over')
     hanover_employee = fields.Many2one('hr.employee')
 
+    state = fields.Selection(selection_add=[('validate2', 'Third Approval'), ('validate',)],
+                             ondelete={'validate2': 'cascade'})
+    alternative_manager_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees')
+    hod_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees')
+    alternative_hod_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees')
+    hr_manager_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees')
+    alternative_hr_manager_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees')
+    third_approver_id = fields.Many2one(
+        'hr.employee', string='Third Approval', readonly=True, copy=False,
+        help='This area is automatically filled by the user who validate the time off with second level (If time off type need third validation)')
+    can_validate = fields.Boolean(compute='_compute_can_validate')
 
 
-    state = fields.Selection(selection_add=[('validate2', 'Third Approval'),('validate',)], ondelete={'validate2': 'cascade'})
-    alternative_manager_id = fields.Many2one('hr.employee',compute='_compute_approval_related_employees')
-    hod_id = fields.Many2one('hr.employee',compute='_compute_approval_related_employees')
-    alternative_hod_id = fields.Many2one('hr.employee',compute='_compute_approval_related_employees')
-    hr_manager_id = fields.Many2one('hr.employee',compute='_compute_approval_related_employees')
-    alternative_hr_manager_id = fields.Many2one('hr.employee',compute='_compute_approval_related_employees')
+    @api.depends('state','validation_type')
+    def _compute_can_validate(self):
+        for holiday in self:
+            holiday.can_validate = False
+            if holiday.validation_type in ('both','manager_hod') and holiday.state in ('validate1',):
+                holiday.can_validate = True
+            if holiday.validation_type in ('manger_hod_hr',) and holiday.state in ('validate2',):
+                holiday.can_validate = True
+
 
 
     @api.depends('employee_id')
@@ -219,4 +232,275 @@ class HrLeave(models.Model):
             rec.hr_manager_id = rec.employee_id.hr_manager_id or None
             rec.alternative_hr_manager_id = rec.employee_id.hr_manager_id.get_handover_employee() if rec.employee_id.hr_manager_id else None
 
+    def get_next_state(self):
+        self.ensure_one()
+        next_state_dict = {
+            'no_validation': {
+                'confirm': 'validate'
+            },
+            'hr': {
+                'confirm': 'validate',
+            },
+            'manager': {
+                'confirm': 'validate',
+            },
+            'both': {
+                'confirm': 'validate1',
+                'validate1': 'validate'
 
+            },
+            'manager_hod': {
+                'confirm': 'validate1',
+                'validate1': 'validate',
+            },
+            'manger_hod_hr': {
+                'confirm': 'validate1',
+                'validate1': 'validate2',
+                'validate2': 'validate',
+            },
+
+        }
+        return next_state_dict.get(self.validation_type, {}).get(self.state, None)
+
+    def _manager_hod_approval_check(self, state):
+        self.ensure_one()
+        current_user = self.env.user
+        current_employee = self.env.user.employee_id
+        is_hr_manager = self.env.user.has_group('hr_holidays.group_hr_holidays_manager')
+
+        if not self.validation_type or not self.validation_type != 'manager_hod':
+            return None
+        if not state:
+            raise UserError(f'something went wrong !! ')
+        if self.state == state:
+            raise UserError(f'something went wrong !! ')
+        next_state = self.get_next_state()
+
+        if self.state == 'refuse' and state == 'confirm' and not is_hr_manager:
+            raise UserError('You Are not allowed to do this operation')
+        if state not in (next_state, 'refuse'):
+            raise UserError('You Are not allowed to do this operation')
+
+        if state == 'validate1' and current_user.id != self.employee_id.leave_manager_id.id and current_employee.id != self.alternative_manager_id.id:
+            raise UserError('You Are not allowed to do this operation')
+        if state == 'validate' and current_employee.id != self.hod_id.id and current_employee.id != self.alternative_hod_id.id:
+            raise UserError('You Are not allowed to do this operation')
+        return None
+
+    def _manger_hod_hr_approval_check(self, state):
+        self.ensure_one()
+        current_user = self.env.user
+        current_employee = self.env.user.employee_id
+        is_hr_manager = self.env.user.has_group('hr_holidays.group_hr_holidays_manager')
+        if not self.validation_type or not self.validation_type != 'manger_hod_hr':
+            return None
+        if not state:
+            raise UserError(f'something went wrong !! ')
+        if self.state == state:
+            raise UserError(f'something went wrong !! ')
+        next_state = self.get_next_state()
+        if self.state == 'refuse' and state == 'confirm' and not is_hr_manager:
+            raise UserError('You Are not allowed to do this operation')
+        if state not in (next_state, 'refuse'):
+            raise UserError('You Are not allowed to do this operation')
+        if state == 'validate1' and current_user.id != self.employee_id.leave_manager_id.id and current_employee.id != self.alternative_manager_id.id:
+            raise UserError('You Are not allowed to do this operation')
+        elif state == 'validate2' and current_employee.id != self.hod_id.id and current_employee.id != self.alternative_hod_id.id:
+            raise UserError('You Are not allowed to do this operation')
+        elif state == 'validate' and current_employee.id != self.hr_manager_id.id and current_employee.id != self.alternative_hr_manager_id.id:
+            raise UserError('You Are not allowed to do this operation')
+
+        return None
+
+    # inherited base method for our logics
+
+    def _check_approval_update(self, state):
+        """ Check if target state is achievable. """
+        if self.env.is_superuser():
+            return None
+        res = super(HrLeave, self)._check_approval_update(state)
+
+        # is_hr_officer = self.env.user.has_group('hr_holidays.group_hr_holidays_user')
+        is_hr_manager = self.env.user.has_group('hr_holidays.group_hr_holidays_manager')
+
+        need_to_send_super = []
+
+        for holiday in self:
+            val_type = holiday.validation_type
+            if not val_type or val_type not in ('manager_hod', 'manger_hod_hr'):
+                continue
+            if val_type == 'manager_hod' and not is_hr_manager:
+                holiday._manager_hod_approval_check(state)
+            if val_type == 'manger_hod_hr' and not is_hr_manager:
+                holiday._manger_hod_hr_approval_check(state)
+
+        return res
+
+    @api.depends('state', 'employee_id', 'department_id')
+    def _compute_can_reset(self):
+        for holiday in self:
+            try:
+                holiday._check_approval_update('confirm')
+            except (AccessError, UserError):
+                holiday.can_reset = False
+            else:
+                holiday.can_reset = True
+
+    @api.depends('state', 'employee_id', 'department_id')
+    def _compute_can_approve(self):
+        res = super(HrLeave, self)._compute_can_approve()
+        for holiday in self:
+            if holiday.validation_type not in ('manager_hod', 'manger_hod_hr'):
+                continue
+            next_state = holiday.get_next_state()
+            if not next_state:
+                holiday.can_approve = False
+                continue
+            try:
+                holiday._check_approval_update(next_state)
+            except (AccessError, UserError):
+                holiday.can_approve = False
+            else:
+                holiday.can_approve = True
+
+    def action_approve(self, check_state=True):
+        prevoius = self.filtered(lambda hol: hol.validation_type not in ('manager_hod', 'manger_hod_hr'))
+        res = super(HrLeave, prevoius).action_validate(check_state)
+        new_holidays = self - prevoius
+        current_employee = self.env.user.employee_id
+        for holiday in new_holidays:
+            next_state = holiday.get_next_state()
+            holiday._check_approval_update(next_state)
+            approval_field = holiday._get_approval_field_based_on_next_stage(next_state)
+            holiday.write({'state': next_state, approval_field: current_employee.id})
+        if not self.env.context.get('leave_fast_create'):
+            new_holidays.activity_update()
+        return True and res
+
+        # # if validation_type == 'both': this method is the first approval approval
+        # # if validation_type != 'both': this method calls action_validate() below
+        #
+        # # Do not check the state in case we are redirected from the dashboard
+        # if check_state and any(holiday.state != 'confirm' for holiday in self):
+        #     raise UserError(_('Time off request must be confirmed ("To Approve") in order to approve it.'))
+        #
+        # current_employee = self.env.user.employee_id
+        # self.filtered(lambda hol: hol.validation_type == 'both').write(
+        #     {'state': 'validate1', 'first_approver_id': current_employee.id})
+        #
+        # self.filtered(lambda hol: hol.validation_type != 'both').action_validate(check_state)
+        # if not self.env.context.get('leave_fast_create'):
+        #     self.activity_update()
+        # return True
+        #
+
+
+    def _get_approval_field_based_on_next_stage(self, next_stage):
+        self.ensure_one()
+        field_dict = {
+            'manger_hod_hr': {'validate1': 'first_approver_id', 'validate2': 'second_approver_id',
+                              'validate': 'third_approver_id'},
+            'manger_hod': {'validate1': 'first_approver_id', 'validate2': 'second_approver_id',
+                           'validate': 'second_approver_id'}
+
+        }
+        return field_dict.get(self.validation_type, {}).get(next_stage, 'first_approver_id')
+
+    def action_validate(self, check_state=True):
+        #  we have two trpe of approval first one are previous and want to work as expected
+        prevoius = self.filtered(lambda hol: hol.validation_type not in ('manager_hod', 'manger_hod_hr'))
+        res = super(HrLeave, prevoius).action_validate(check_state)
+        new_holidays = self - prevoius
+        new_leaves = new_holidays._get_leaves_on_public_holiday()
+        current_employee = self.env.user.employee_id
+        if new_leaves:
+            raise ValidationError(
+                _('The following employees are not supposed to work during that period:\n %s') % ','.join(
+                    new_leaves.mapped('employee_id.name')))
+        for holiday in new_holidays:
+            next_state = holiday.get_next_state()
+            holiday._check_approval_update(next_state)
+            approval_field = holiday._get_approval_field_based_on_next_stage(next_state)
+            holiday.write({'state': next_state, approval_field: current_employee.id})
+
+        new_holidays._validate_leave_request()
+        if not self.env.context.get('leave_fast_create'):
+            new_holidays.filtered(lambda holiday: holiday.validation_type != 'no_validation').activity_update()
+        return res
+
+        # current_employee = self.env.user.employee_id
+        # leaves = self._get_leaves_on_public_holiday()
+        # if leaves:
+        #     raise ValidationError(
+        #         _('The following employees are not supposed to work during that period:\n %s') % ','.join(
+        #             leaves.mapped('employee_id.name')))
+        # if check_state and any(
+        #         holiday.state not in ['confirm', 'validate1'] and holiday.validation_type != 'no_validation' for
+        #         holiday in self):
+        #     raise UserError(_('Time off request must be confirmed in order to approve it.'))
+        #
+        # self.write({'state': 'validate'})
+        #
+        # leaves_second_approver = self.env['hr.leave']
+        # leaves_first_approver = self.env['hr.leave']
+        #
+        # for leave in self:
+        #     if leave.validation_type == 'both':
+        #         leaves_second_approver += leave
+        #     else:
+        #         leaves_first_approver += leave
+        #
+        # leaves_second_approver.write({'second_approver_id': current_employee.id})
+        # leaves_first_approver.write({'first_approver_id': current_employee.id})
+        #
+        # self._validate_leave_request()
+        # if not self.env.context.get('leave_fast_create'):
+        #     self.filtered(lambda holiday: holiday.validation_type != 'no_validation').activity_update()
+        # return True
+
+    def action_refuse(self):
+        current_employee = self.env.user.employee_id
+        prevoius = self.filtered(lambda hol: hol.validation_type not in ('manager_hod', 'manger_hod_hr'))
+        res = super(HrLeave, prevoius).action_refuse()
+        new_holidays = self - prevoius
+        if any(holiday.state not in ['confirm', 'validate', 'validate1', 'validate2'] for holiday in new_holidays):
+            raise UserError(_('Time off request must be confirmed or validated in order to refuse it.'))
+
+        new_holidays._notify_manager()
+        validated_holidays = new_holidays.filtered(lambda hol: hol.state == 'validate1')
+        validated_holidays.write({'state': 'refuse', 'first_approver_id': current_employee.id})
+        validated2_holidays = new_holidays.filtered(lambda hol: hol.state == 'validate2')
+        validated2_holidays.write({'state': 'refuse', 'second_approver_id': current_employee.id})
+        (new_holidays - validated_holidays - validated2_holidays).write(
+            {'state': 'refuse', 'third_approver_id': current_employee.id})
+        # Delete the meeting
+        new_holidays.mapped('meeting_id').write({'active': False})
+        # Post a second message, more verbose than the tracking message
+        for holiday in new_holidays:
+            if holiday.employee_id.user_id:
+                holiday.message_post(
+                    body=_('Your %(leave_type)s planned on %(date)s has been refused',
+                           leave_type=holiday.holiday_status_id.display_name, date=holiday.date_from),
+                    partner_ids=holiday.employee_id.user_id.partner_id.ids)
+
+        new_holidays.activity_update()
+        return True and res
+
+        # for holiday in self:
+        #     try:
+        #         if holiday.state == 'confirm' and holiday.validation_type == 'both':
+        #             holiday._check_approval_update('validate1')
+        #         else:
+        #             holiday._check_approval_update('validate')
+        #     except (AccessError, UserError):
+        #         holiday.can_approve = False
+        #     else:
+        #         holiday.can_approve = True
+
+    # @api.depends_context('uid')
+    # @api.depends('state', 'employee_id')
+    # def _compute_can_cancel(self):
+    #     now = fields.Datetime.now().date()
+    #     for leave in self:
+    #         leave.can_cancel = leave.id and leave.employee_id.user_id == self.env.user and leave.state in ['validate',
+    #                                                                                                        'validate1'] and leave.date_from and leave.date_from.date() >= now
