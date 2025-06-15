@@ -240,8 +240,8 @@ class HrEmployee(models.Model):
         for employee,leave_type in allocations_leaves_consumed.items():
             for leave_type,allocation in leave_type.items():
                 for allocation,data in allocation.items():
-                    if not allocation.is_carry_over_allocation:
-                        continue
+                    # if not allocation.is_carry_over_allocation:
+                    #     continue
                     frozen_data = allocation._get_previous_frozen_data()
                     data['frozen_leave'] = frozen_data.get('frozen_count',0.0)
                     data['usa_able_frozen_leave'] = frozen_data.get('use_able_frozen',0.0)

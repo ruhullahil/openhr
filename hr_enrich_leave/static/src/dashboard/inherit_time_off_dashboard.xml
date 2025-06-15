@@ -4,8 +4,24 @@
 
         <xpath expr="//div[@class='d-flex flex-column justify-content-center align-items-center w-100']" position="replace">
             <div class="d-flex flex-column justify-content-center align-items-center w-100">
-
             </div>
         </xpath>
     </t>
+
+    <t t-inherit="hr_holidays.TimeOffCardPopover" t-inherit-mode="extension">
+        <xpath expr="//li[@t-if='props.accrual_bonus']" position="attributes">
+            <attribute name="t-if">props.accrual_bonus &gt; 0.001</attribute>
+        </xpath>
+
+        <xpath expr="//li[1]" position="before">
+            <li class="d-flex justify-content-between" t-if="props.frozenLeave &gt; 0.001">
+                Frozen Balance: <span class="ps-1" t-esc="props.frozenLeave"/>
+            </li>
+            <li class="d-flex justify-content-between" t-if="props.usaAbleFrozenLeave &gt; 0.001">
+                Use able frozen Balance: <span class="ps-1" t-esc="props.usaAbleFrozenLeave"/>
+            </li>
+        </xpath>
+
+    </t>
+
 </templates>

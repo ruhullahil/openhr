@@ -39,7 +39,8 @@ Long description of module's purpose
     ],
     'assets': {
             'web.assets_backend': [
-                'hr_enrich_leave/static/src/dashboard/inherit_time_off_dashboard.xml'
+                'hr_enrich_leave/static/src/dashboard/inherit_time_off_dashboard.xml',
+                'hr_enrich_leave/static/src/dashboard/inherit_time_off_card.js',
                 # Don't include dark mode files in light mode
 
             ],

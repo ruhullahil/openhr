@@ -13,7 +13,7 @@ class HrAllocation(models.Model):
         self.ensure_one()
         data = {}
         FrozenInfo = self.env['frozen.allocation.info']
-        if not self.is_carry_over_allocation or not self.config_line_id or self.config_line_id.is_auto_renew:
+        if not self.is_carry_over_allocation or not self.config_line_id or not self.config_line_id.is_auto_renew:
             return data
         frozen_infos = FrozenInfo.sudo().search(
             [('employee_id', '=', self.employee_id.id), ('leave_type_id', 'in', self.holiday_status_id.ids),

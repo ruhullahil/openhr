@@ -197,6 +197,7 @@ class HrLeave(models.Model):
     # --------------------------------------------------------------------------------------------------------------------------------
     #     Handover related info
     is_require_hand_over = fields.Boolean(related='holiday_status_id.is_require_hand_over')
+    is_need_hand_over = fields.Boolean(related='holiday_status_id.is_need_hand_over')
     hanover_employee = fields.Many2one('hr.employee')
 
     state = fields.Selection(selection_add=[('validate2', 'Third Approval'), ('validate',)],

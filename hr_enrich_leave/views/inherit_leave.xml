@@ -20,7 +20,8 @@
                 <field name="compensatory_restriction" invisible="1"/>
                 <field name="compensatory_id" invisible="not is_compensatory_leave" required="is_compensatory_leave" string="Compensatory Day"/>
                 <field name="is_require_hand_over" invisible="1"/>
-                <field name="hanover_employee" invisible="not is_require_hand_over" required="is_require_hand_over" string="Task Hand Over Employee"/>
+                <field name="is_need_hand_over" invisible="1"/>
+                <field name="hanover_employee" invisible="not is_need_hand_over" required="is_require_hand_over and is_need_hand_over" string="Task Hand Over Employee"/>
             </xpath>
             <xpath expr="//div[1]" position="before">
                 <div class="alert alert-info" role="alert" invisible="not info_message">
