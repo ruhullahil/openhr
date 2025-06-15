@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="hr_enrich_attendence.list">
+      <field name="name">hr_enrich_attendence list</field>
+      <field name="model">hr_enrich_attendence.hr_enrich_attendence</field>
+      <field name="arch" type="xml">
+        <list>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </list>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="hr_enrich_attendence.action_window">
+      <field name="name">hr_enrich_attendence window</field>
+      <field name="res_model">hr_enrich_attendence.hr_enrich_attendence</field>
+      <field name="view_mode">list,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="hr_enrich_attendence.action_server">
+      <field name="name">hr_enrich_attendence server</field>
+      <field name="model_id" ref="model_hr_enrich_attendence_hr_enrich_attendence"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "list,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="hr_enrich_attendence" id="hr_enrich_attendence.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="hr_enrich_attendence.menu_1" parent="hr_enrich_attendence.menu_root"/>
+    <menuitem name="Menu 2" id="hr_enrich_attendence.menu_2" parent="hr_enrich_attendence.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="hr_enrich_attendence.menu_1_list" parent="hr_enrich_attendence.menu_1"
+              action="hr_enrich_attendence.action_window"/>
+    <menuitem name="Server to list" id="hr_enrich_attendence" parent="hr_enrich_attendence.menu_2"
+              action="hr_enrich_attendence.action_server"/>
+-->
+  </data>
+</odoo>

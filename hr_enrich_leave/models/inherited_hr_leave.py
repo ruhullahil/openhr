@@ -212,17 +212,14 @@ class HrLeave(models.Model):
         help='This area is automatically filled by the user who validate the time off with second level (If time off type need third validation)')
     can_validate = fields.Boolean(compute='_compute_can_validate')
 
-
-    @api.depends('state','validation_type')
+    @api.depends('state', 'validation_type')
     def _compute_can_validate(self):
         for holiday in self:
             holiday.can_validate = False
-            if holiday.validation_type in ('both','manager_hod') and holiday.state in ('validate1',):
+            if holiday.validation_type in ('both', 'manager_hod') and holiday.state in ('validate1',):
                 holiday.can_validate = True
             if holiday.validation_type in ('manger_hod_hr',) and holiday.state in ('validate2',):
                 holiday.can_validate = True
-
-
 
     @api.depends('employee_id')
     def _compute_approval_related_employees(self):
@@ -395,7 +392,6 @@ class HrLeave(models.Model):
         # return True
         #
 
-
     def _get_approval_field_based_on_next_stage(self, next_stage):
         self.ensure_one()
         field_dict = {
@@ -486,6 +482,22 @@ class HrLeave(models.Model):
 
         new_holidays.activity_update()
         return True and res
+
+    is_broken_leave = fields.Boolean(related='holiday_status_id.is_broken_leave')
+
+    @api.constrains('is_broken_leave')
+    def broken_leave_validation_check(self):
+        for holiday in self:
+            if not holiday.is_broken_leave:
+                continue
+            if holiday.is_broken_leave and holiday.request_date_from != holiday.request_date_to:
+                raise ValidationError('Broken leave must be in same day interval')
+            broken_leave_count = self.search_count(
+                [('employee_id', '=', holiday.employee_id.id), ('company_id', '=', holiday.company_id.id),
+                 ('state', 'not in', ['refuse', 'cancel']),
+                 ('request_date_from', '=', holiday.request_date_from)('holiday_status_id.is_broken_leave', '=', True)])
+            if broken_leave_count > 1:
+                raise ValidationError('In One day you can apply only one broken leave')
 
         # for holiday in self:
         #     try:

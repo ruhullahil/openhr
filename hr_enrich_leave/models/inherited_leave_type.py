@@ -1,6 +1,7 @@
 from math import ceil, floor
 
 from odoo import fields, models, api, Command
+from odoo.exceptions import ValidationError
 
 
 class InheritHrLeaveType(models.Model):
@@ -117,3 +118,17 @@ class InheritHrLeaveType(models.Model):
                 # else:
                 #     leave_data[1]['overtime_deductible'] = False
         return res
+
+#     short leave
+
+    is_broken_leave = fields.Boolean(string='Broken leave')
+
+
+    @api.constrains('is_broken_leave','request_unit')
+    def broken_leave_constrain_check(self):
+        for rec in self:
+            if not rec.is_broken_leave:
+                continue
+            if rec.request_unit not in ('half_day','hour'):
+                raise ValidationError('Broken leave must be in hour or half day !!')
+
