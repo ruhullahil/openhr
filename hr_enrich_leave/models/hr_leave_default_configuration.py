@@ -438,7 +438,7 @@ class HrDefaultConfigLine(models.Model):
             previous_allocation = allocation.get_previous_allocation()
             if not previous_allocation or not previous_allocation.config_line_id:
                 continue
-            frozen_data_list.append(previous_allocation.config_line_id.prepare_frozen_info(allocation))
+            frozen_data_list.append(previous_allocation.config_line_id.prepare_frozen_info(previous_allocation))
         frozen_datas = self.env['frozen.allocation.info'].sudo().create(frozen_data_list)
         return allocations,frozen_datas
 
