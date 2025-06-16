@@ -9,6 +9,7 @@
 
             <xpath expr="//group[@name='configuration']" position="inside">
                 <field name="is_check_auto_clear" invisible="1"/>
+                <field name="is_broken_leave"/>
                 <field name="rounding_type"/>
                 <field name="is_need_hand_over"/>
                 <field name="is_require_hand_over" invisible="not is_need_hand_over"/>

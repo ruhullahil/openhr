@@ -25,6 +25,7 @@ Long description of module's purpose
         'security/ir.model.access.csv',
         'security/leave_related_security.xml',
         'data/sequence.xml',
+        'data/leave_allocation_corn.xml',
         'views/views.xml',
         'views/inherited_leave_type.xml',
         'views/hr_leave_default_configuration.xml',
