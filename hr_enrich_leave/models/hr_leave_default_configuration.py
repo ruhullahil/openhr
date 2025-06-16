@@ -65,7 +65,8 @@ class AllocationCondition(models.Model):
 
         if config_line.allocation_condition_based_in == 'joining':
             current_date = fields.Date.context_today(self)
-            joining_date_current_year = employee.date_of_joining.replace(year=current_date.year)
+            employee_joining_date = employee.date_of_joining or current_date
+            joining_date_current_year = employee_joining_date.replace(year=current_date.year)
             condition_line = self._get_condition_line_base_on_joining(joining_date_current_year)
             if not condition_line:
                 return 0
