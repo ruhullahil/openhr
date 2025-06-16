@@ -4,4 +4,8 @@
     <menuitem id="hr_leave_configuration_menu" name="Leave Configure" parent="hr_holidays.menu_hr_holidays_configuration" action="hr_leave_configuration_action" sequence="3"/>
     <menuitem id="hr_leave_condition_menu" name="Leave Condition" parent="hr_holidays.menu_hr_holidays_configuration" action="leave_condition_action" sequence="5"/>
     <menuitem id="hr_compensatory_day_menu" name="Compensatory Days" parent="hr_holidays.menu_hr_holidays_my_leaves" action="compensatory_day_action" sequence="5"/>
+
+    <record model="ir.ui.menu" id="hr_holidays.hr_holidays_menu_manager_approve_allocations">
+        <field name="groups_id" eval="[Command.set([ref('hr_holidays.group_hr_holidays_manager')])]"/>
+    </record>
 </odoo>

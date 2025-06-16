@@ -9,6 +9,11 @@
             <xpath expr="//field[@name='supported_attachment_ids']" position="before">
                 <field name="is_document_required" invisible="1"/>
                 <field name="can_validate" invisible="1"/>
+                <field name="alternative_manager_id" invisible="1"/>
+                <field name="hod_id" invisible="1"/>
+                <field name="alternative_hod_id" invisible="1"/>
+                <field name="hr_manager_id" invisible="1"/>
+                <field name="alternative_hr_manager_id" invisible="1"/>
             </xpath>
 
             <xpath expr="//field[@name='supported_attachment_ids']" position="attributes">

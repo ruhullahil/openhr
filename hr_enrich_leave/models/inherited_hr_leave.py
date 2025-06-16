@@ -202,11 +202,11 @@ class HrLeave(models.Model):
 
     state = fields.Selection(selection_add=[('validate2', 'Third Approval'), ('validate',)],
                              ondelete={'validate2': 'cascade'})
-    alternative_manager_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees')
-    hod_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees')
-    alternative_hod_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees')
-    hr_manager_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees')
-    alternative_hr_manager_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees')
+    alternative_manager_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees',store=True)
+    hod_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees',store=True)
+    alternative_hod_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees',store=True)
+    hr_manager_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees',store=True)
+    alternative_hr_manager_id = fields.Many2one('hr.employee', compute='_compute_approval_related_employees',store=True)
     third_approver_id = fields.Many2one(
         'hr.employee', string='Third Approval', readonly=True, copy=False,
         help='This area is automatically filled by the user who validate the time off with second level (If time off type need third validation)')
@@ -221,7 +221,7 @@ class HrLeave(models.Model):
             if holiday.validation_type in ('manger_hod_hr',) and holiday.state in ('validate2',):
                 holiday.can_validate = True
 
-    @api.depends('employee_id')
+    @api.depends('employee_id','employee_id.parent_id','employee_id.coach_id')
     def _compute_approval_related_employees(self):
         for rec in self:
             rec.alternative_manager_id = rec.employee_id.parent_id.get_handover_employee() if rec.employee_id.parent_id else None
@@ -266,20 +266,20 @@ class HrLeave(models.Model):
         current_employee = self.env.user.employee_id
         is_hr_manager = self.env.user.has_group('hr_holidays.group_hr_holidays_manager')
 
-        if not self.validation_type or not self.validation_type != 'manager_hod':
+        if not self.validation_type or self.validation_type != 'manager_hod':
             return None
         if not state:
             raise UserError(f'something went wrong !! ')
         if self.state == state:
-            raise UserError(f'something went wrong !! ')
+            return None
         next_state = self.get_next_state()
 
         if self.state == 'refuse' and state == 'confirm' and not is_hr_manager:
             raise UserError('You Are not allowed to do this operation')
-        if state not in (next_state, 'refuse'):
+        if state not in (next_state, 'refuse', 'cancel'):
             raise UserError('You Are not allowed to do this operation')
 
-        if state == 'validate1' and current_user.id != self.employee_id.leave_manager_id.id and current_employee.id != self.alternative_manager_id.id:
+        if state == 'validate1' and self.employee_id.parent_id.id != current_employee.id and current_user.id != self.employee_id.leave_manager_id.id and current_employee.id != self.alternative_manager_id.id:
             raise UserError('You Are not allowed to do this operation')
         if state == 'validate' and current_employee.id != self.hod_id.id and current_employee.id != self.alternative_hod_id.id:
             raise UserError('You Are not allowed to do this operation')
@@ -290,7 +290,7 @@ class HrLeave(models.Model):
         current_user = self.env.user
         current_employee = self.env.user.employee_id
         is_hr_manager = self.env.user.has_group('hr_holidays.group_hr_holidays_manager')
-        if not self.validation_type or not self.validation_type != 'manger_hod_hr':
+        if not self.validation_type or self.validation_type != 'manger_hod_hr':
             return None
         if not state:
             raise UserError(f'something went wrong !! ')
@@ -316,12 +316,11 @@ class HrLeave(models.Model):
         """ Check if target state is achievable. """
         if self.env.is_superuser():
             return None
-        res = super(HrLeave, self)._check_approval_update(state)
+        prevoius = self.filtered(lambda hol: hol.validation_type not in ('manager_hod', 'manger_hod_hr'))
+        res = super(HrLeave, prevoius)._check_approval_update(state)
 
         # is_hr_officer = self.env.user.has_group('hr_holidays.group_hr_holidays_user')
         is_hr_manager = self.env.user.has_group('hr_holidays.group_hr_holidays_manager')
-
-        need_to_send_super = []
 
         for holiday in self:
             val_type = holiday.validation_type
@@ -346,7 +345,7 @@ class HrLeave(models.Model):
 
     @api.depends('state', 'employee_id', 'department_id')
     def _compute_can_approve(self):
-        res = super(HrLeave, self)._compute_can_approve()
+
         for holiday in self:
             if holiday.validation_type not in ('manager_hod', 'manger_hod_hr'):
                 continue
@@ -360,6 +359,8 @@ class HrLeave(models.Model):
                 holiday.can_approve = False
             else:
                 holiday.can_approve = True
+        prevoius = self.filtered(lambda hol: hol.validation_type not in ('manager_hod', 'manger_hod_hr'))
+        res = super(HrLeave, prevoius)._compute_can_approve()
 
     def action_approve(self, check_state=True):
         prevoius = self.filtered(lambda hol: hol.validation_type not in ('manager_hod', 'manger_hod_hr'))
