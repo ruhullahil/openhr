@@ -320,9 +320,23 @@ class HrDefaultConfigLine(models.Model):
             end_date = start_date + relativedelta(years=1) - relativedelta(days=1)
         return end_date
 
+    def _get_renew_base_start_date(self):
+        start_date = fields.Date.context_today(self)
+        if self.renew_cycle == 'daily':
+            return start_date
+        elif self.renew_cycle == 'weekly':
+            week_day = start_date.weekday()
+            return start_date - relativedelta(days=week_day)
+        elif self.renew_cycle == 'monthly':
+            return start_date.replace(day=1)
+        elif self.renew_cycle == 'yearly':
+            return start_date.replace(month=1, day=1)
+        return start_date
+
     def _get_start_date(self, employee):
         self.ensure_one()
-        start_date = fields.Date.context_today(self).replace(month=1, day=1)
+
+        start_date = self._get_renew_base_start_date()
         if self.renew_base == 'fixed':
             start_date += relativedelta(days=(self.renew_day - 1))
         elif self.renew_base == 'join_date':
