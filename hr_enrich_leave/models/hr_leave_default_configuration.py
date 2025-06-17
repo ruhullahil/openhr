@@ -241,7 +241,7 @@ class HrDefaultConfigLine(models.Model):
             days = duration.days
             months += 1 if days > 15 else 0
             line.remain_month = 1 if date > end_day else months
-            print('remain month', line.remain_month)
+            # print('remain month', line.remain_month)
 
     # carry over related fields
     is_able_carry_over = fields.Boolean()

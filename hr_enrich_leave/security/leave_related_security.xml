@@ -25,4 +25,19 @@
         <field name="perm_unlink" eval="False"/>
         <field name="groups" eval="[(4, ref('hr_holidays.group_hr_holidays_responsible'))]"/>
     </record>
+
+    <record id="hr_compensatory_day_rule" model="ir.rule">
+        <field name="name">Time Off Responsible read Extension</field>
+        <field name="model_id" ref="model_hr_compensatory_day"/>
+        <field name="domain_force">[
+                '|',('employee_id.leave_manager_id', '=', user.id),
+            '|',('employee_id.parent_id','in',user.employee_id.ids),
+            '|',('employee_id.coach_id','in',user.employee_id.ids),
+            ('employee_id.user_id', '=', user.id),
+        ]</field>
+<!--        <field name="perm_write" eval="False"/>-->
+<!--        <field name="perm_create" eval="False"/>-->
+<!--        <field name="perm_unlink" eval="False"/>-->
+        <field name="groups" eval="[(4, ref('hr_holidays.group_hr_holidays_responsible')),Command.link(ref('base.group_user'))]"/>
+    </record>
 </odoo>
