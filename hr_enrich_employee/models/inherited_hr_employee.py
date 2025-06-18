@@ -130,6 +130,20 @@ class HrEmployee(models.Model):
         for rec in self:
             target_date = fields.Date.context_today(self.env.user)
             rec.employment_year = relativedelta(target_date, self.date_of_joining).years if self.date_of_joining else 0
+    # contract_generation
+    def generate_employee_contract(self):
+        self.ensure_one()
+        current_date = fields.Date.context_today(self)
+        data = {
+            'name': f'{self.display_name} contract start with {self.date_of_joining or current_date}',
+            'employee_id': self.id,
+            'date_start' : self.date_of_joining or current_date,
+            'state':'open',
+            'wage': 0.0,
+        }
+        contract = self.env['hr.contract'].sudo().create(data)
+        return contract
+
 
 
 
@@ -142,7 +156,11 @@ class HrEmployee(models.Model):
 
     def _inverse_contract_salary(self):
         for employee in self:
-            employee.contract_id.wage = employee.salary
+            if employee and not employee.contract_id:
+                contract = employee.generate_employee_contract()
+                contract.wage = employee.salary
+            else:
+                employee.contract_id.wage = employee.salary
 
     @api.depends('contract_id','contract_id.contract_type_id')
     def _compute_contract_type_id(self):
@@ -174,6 +192,8 @@ class HrEmployee(models.Model):
         return res
 
 
+
+
 class HrEmployeeBase(models.AbstractModel):
     _inherit = 'hr.employee.base'
 
@@ -183,12 +203,13 @@ class HrEmployeeBase(models.AbstractModel):
         [('a_positive', 'A+'), ('a_neg', 'A-'), ('b_positive', 'B+'), ('b_neg', 'B-'), ('ab_positive', 'AB+'),
          ('ab_neg', 'AB-'),('o+','O+'),('o-','O-')])
 
-    @api.depends('department_id')
+    @api.depends('department_id','department_id.manager_id')
     def _compute_parent_id(self):
         for employee in self:
-            employee.parent_id = None
+            if not employee.parent_id:
+                employee.parent_id = None
 
-    @api.depends('parent_id','department_id')
+    @api.depends('parent_id','department_id','department_id.manager_id')
     def _compute_coach(self):
         for employee in self:
             employee.coach_id = employee.department_id.manager_id.id or None
